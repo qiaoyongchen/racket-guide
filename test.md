@@ -42,3 +42,22 @@ Racket用圆括号包围长表达式-几乎除了简单的常量以外的任何�
 > (substring "the boy out of the country" 4 7)
 "boy"
 ```
+
+### 1.2定义和交互
+你可以通过定义的形式定义一个类似substring的函数，就像这样：
+```
+（define (extract str)
+    (substring str 4 7))
+
+> (extract "the boy out of country")
+"boy"
+> (extract "the country out of the boy")
+"cou"
+```
+尽管你可以在REPL中执行这个定义，但是定义通常是程序的一部分，你可能希望保存它，并在之后使用。所以在DrRacket中，你通常都会把定义放在文本区上方的定义区（和#lang放在一起）。
+```
+#lang racket
+(define (extract str)
+    (substring str 4 7))
+```
+如果调用(extract "the boy")是你程序的一部分，你也可以在定义区定义。
