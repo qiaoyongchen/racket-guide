@@ -70,3 +70,32 @@ Racket用圆括号包围长表达式-几乎除了简单的常量以外的任何�
 ```
 
 enter!会加载源码并且在模块中切换运行环境，就像在DrRacket中点击Run按钮一样。
+
+### 1.3创建可执行程序
+如果你的文件（或者DrRacket）包含如下内容
+```
+#lang racket
+(define (extract str)
+    (substring str 4 7))
+
+(extract "the cat out of the bag")
+```
+那么这就是一个完整的程序，并会在运行的时候打印出“cat”。你可以使用DrRacket或者在racket中用enter!运行这个程序，但是如果这段源码被保存进<源码文件名>，我也可以在命令行中这样运行它
+```
+racket <源码文件名>
+```
+这里给出一些把代码打包成可执行程序的建议：
+- 在DrRacket中，你可以选择 Racket|Create Executable...选项
+- 命令行中，运行raco exe <源码文件名>。查看[raco exe: Creating Stand-Alone Executables](https://docs.racket-lang.org/raco/exe.html)了解更多信息。
+- Unix或Mac OS中，你可以通过在代码文件最开始的地方插入下面的代码来来生成一个可执行的脚本。
+```
+#! /usr/bin/env racket
+```
+然后在命令行中执行chmod +x <源码文件名>改变文件权限。
+
+只要racket在用户的可执行程序的搜索路径中，这个脚本就可以执行。或者在#!后（#!和路径之间有一个空格）使用racket的完整路径，这样的话racket是否在可执行程序的搜索路径中就无所谓了。
+
+### 1.4对于有Lisp/Scheme经验读者的一些注意事项
+
+
+
