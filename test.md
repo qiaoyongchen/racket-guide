@@ -176,6 +176,17 @@ Racket的值包括数字值，布尔值，字符串值，字节串值。在DrRac
 > (piece "key lime")
 "key"
 ```
+实际上，方法定义和非方法定义一样，并且方法名不一定得用于方法调用。方法只是另一种形式的值，尽管打印出来的形式和数字或者字符串比不太完整。
+
+例如:
+```
+> piece
+#<procedure:piece>
+> substring
+#<procedure:substring>
+```
+
+
 
 
 
