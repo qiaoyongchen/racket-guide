@@ -96,6 +96,33 @@ racket <源码文件名>
 只要racket在用户的可执行程序的搜索路径中，这个脚本就可以执行。或者在#!后（#!和路径之间有一个空格）使用racket的完整路径，这样的话racket是否在可执行程序的搜索路径中就无所谓了。
 
 ### 1.4对于有Lisp/Scheme经验读者的一些注意事项
+如果你已经有一些Scheme或者Lisp的经验，你可能会把
+```
+(define (extract str)
+    (substring str 4 7))
+```
+写到“extract.rktl”,然后这样运行racket
+```
+> (load "extrack.rktl")
+> (extract "the dog out")
+"dog"
+```
+没错，这可以运行，因为racket会模拟一个传统意义上的lisp环境。
+但是我们强烈建议你不要在模块外加载([load](https://docs.racket-lang.org/reference/eval.html#%28def._%28%28quote._~23~25kernel%29._load%29%29))或写程序。
+
+在模块外写定义将导致错误、性能下降和一个难以维护和运行程序。这些问题并不是racket特有的。这是传统顶层环境（top-level environment）的
+限制，Scheme和Lisp都曾在特殊的命令行标记、编译指令、构建工具上面纠结过。模块系统被设计用来避免这些问题，所以从长远看来，以#lang开始你会更加喜欢racket。
+
+## Racket要素
+本章将简单介绍作为本指南其他章节的背景知识。有Racket经验的读者可以放心的跳至[Built-In Datatypes](https://docs.racket-lang.org/guide/datatypes.html)。
+
+### 2.1简单值
+Racket的值包括数字值，布尔值，字符串值，字节串值。在DrRacket和文档的例子中，值表达式会显示为绿色。
+
+
+
+
+
 
 
 
