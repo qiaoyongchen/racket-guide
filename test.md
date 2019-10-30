@@ -113,7 +113,7 @@ racket <源码文件名>
 在模块外写定义将导致错误、性能下降和一个难以维护和运行程序。这些问题并不是racket特有的。这是传统顶层环境（top-level environment）的
 限制，Scheme和Lisp都曾在特殊的命令行标记、编译指令、构建工具上面纠结过。模块系统被设计用来避免这些问题，所以从长远看来，以#lang开始你会更加喜欢racket。
 
-## Racket要素
+## 2 Racket要素
 本章将简单介绍作为本指南其他章节的背景知识。有Racket经验的读者可以放心的跳至[Built-In Datatypes](https://docs.racket-lang.org/guide/datatypes.html)。
 
 ### 2.1简单值
