@@ -199,11 +199,103 @@ Racket的值包括数字值，布尔值，字符串值，字节串值。在DrRac
 在这个里例子中，缩进会帮助高亮错误。在其他例子中，当一个左园括号没有一个与之匹配的右园括号时，缩进会正常。当圆括号缺失时，racket和DrRacket都会通过源码缩进显示。
 
 #### 2.2.3标识符
+racket的标识符语法很自由。除了特殊字符和有数字常量组成的字符序列，几乎任何不含有空白字符的形式都可以是一个标识符。例如，subtring是一个标识符。同样string-append和a+b也是标识符，而不是算术表达式。下面还有几个例子：
+```
++
+Hfuhruhurr
+integer?
+pass/fail
+john-jacob-jingleheimer-schmidt
+a-b-c+1-2-3
+```
 
+#### 2.2.4 函数调用（程序应用）
+我们已经见过很多函数调用了，在更传统一点的术语中，被称作为程序应用。
+函数调用的语法是：
+```
+( <标识符> <表达式>* )
+```
+<表达式>s的数量决定应用到<标识符>函数的参数数量。
 
+racket内置了很多函数标识符，如 substring、string-append。后面我们会见到很多的例子。
 
+文档中的racket代码示例中，使用的内置名称会链接到参考手册。你可以点击并查看它的使用细节。
 
+```
+> (string-append "rope" "twine" "yarn")  ; append strings
+"ropetwineyarn"
 
+> (substring "corduroys" 0 4)            ; extract a substring
+"cord"
 
+> (string-length "shoelace")             ; get a string's length
+8
+
+> (string? "Ceci n'est pas une string.") ; recognize strings
+#t
+
+> (string? 1)
+#f
+
+> (sqrt 16)                              ; find a square root
+4
+
+> (sqrt -16)
+0+4i
+
+> (+ 1 2)                                ; add numbers
+3
+
+> (- 2 1)                                ; subtract numbers
+1
+
+> (< 2 1)                                ; compare numbers
+#f
+
+> (>= 2 1)
+#t
+
+> (number? "c'est une number")           ; recognize numbers
+#f
+
+> (number? 1)
+#t
+
+> (equal? 6 "half dozen")                ; compare anything
+#f
+
+> (equal? 6 6)
+#t
+
+> (equal? "half dozen" "half dozen")
+#t
+```
+
+#### 2.2.5条件判断(if、and、or和cond)
+做简单的一种条件判断是if
+```
+( if <表达式> <表达式> <表达式> )
+```
+第一个<表达式>总是会被执行。如果它执行出一个非#f值，第二个<表达式>将被执行，并把该值作为整个if表达式的值返回，否则第三个表达式执行并返回整个if表达式的值。
+例如：
+```
+(if (> 2 3)
+    "bigger"
+    "smaller")
+"smaller"
+
+(define (reply s)
+    (if (equal? "hello" (substring s 0 5))
+    "hi!"
+    "huh?"))
+> (reply "hello racket")
+"hi!"
+> (reply "λx:(μα.α→α).xx")
+"huh?"
+```
+
+复杂的条件判断可以通过嵌套if表达式来实现。例如，你可以使reply函数处理非字符串的输入：
+```
+```
 
 
