@@ -296,6 +296,27 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
 
 复杂的条件判断可以通过嵌套if表达式来实现。例如，你可以使reply函数处理非字符串的输入：
 ```
+(define (reply s)
+    (if (string? s)
+        (if (equal? "hello" (substring s 0 5))
+            "hi!"
+            "huh?)
+        "huh?"))
+```
+避免出现两次“huh？”，更好的书写方式为
+```
+(define (reply s)
+    (if (if (string? s)
+            (equal? "hello" (substring s 0 5))
+            #f)
+        "hi!"
+        "huh?"))
+```
+不过这种嵌套if的方式难以阅读。racket提供可用于使用在任何表达式数量的and和or形式使代码更可读。
+
+```
+(and <表达式>* )
+(or <表达式>* )
 ```
 
 
