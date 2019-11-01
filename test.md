@@ -318,5 +318,28 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
 (and <表达式>* )
 (or <表达式>* )
 ```
+and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否则它会继续执行。or会在碰到一个真值时出现截断。
+例如：
+```
+(define (reply s)
+    (if (and (string? s)
+             (>= (string-length s) 5
+             (equal? "hello" (substring s 0 5)))
+        "hi"
+        "huh?"))
+
+> (reply "hello racket")
+"hi!"
+> (reply 17)
+"huh?"
+```
+另一个常见的if嵌套是提供一系列测试，每个都有一个结果：
+
+
+
+
+
+
+
 
 
