@@ -334,10 +334,40 @@ and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否�
 "huh?"
 ```
 另一个常见的if嵌套是提供一系列测试，每个都有一个结果：
+```
+(define (reply-more s)
+    (if (equal? "hello" (substring s 0 5))
+        "hi!"
+        (if (equal? "goodbye" (substring s 0 7))
+            "bye"
+            (if (equal? "?" (substring s (- (string-length s) 1)))
+            "I don't know"
+            "huh?"))))
+```
+一系列测试的另一种简便写法是[cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29)形式：
+```
+( cond {[ <表达式> <表达式>* ]}* )
+```
+[cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29)形式用方括号包裹一些列子句。每个子句中的第一个<表达式>是一个测试表达式。如果它返回true，那么剩下的 <表达式>* 将会被执行，其中最后一个表达式执行结果将作为整个[cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29)表达式的结果;并且剩下的子句将会被忽略。如果<表达式>返回#f，那么这个表达式剩下的 <表达式>* 将会被忽略，继续执行下一条子句。最后一个子句可以使用 [else](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._else%29%29)(它的作用和#t一样)作为测试<表达式>。
 
+使用[cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29)，上面的 reply-more 函数可以被更简洁的写成下面的形式：
+```
+(define (reply-more s)
+    (cond
+        [(equal? "hello" (substring s 0 5)) "hi!"]
+        [(equal? "goodbye" (substring s 0 7)) "bye!"]
+        [(equal? "?" (substring s (- (string-length s) 1))) "I don't know"]
+        [else "huh?"]))
 
-
-
+> (reply-more "hello racket")
+"hi!"
+> (reply-more "goodbye cruel world")
+"bye!"
+> (reply-more "what is your favorite color?")
+"I don't know"
+> (reply-more "mine is lime green")
+"huh?"
+```
 
 
 
