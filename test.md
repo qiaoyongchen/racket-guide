@@ -224,49 +224,34 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
 ```
 > (string-append "rope" "twine" "yarn")  ; append strings
 "ropetwineyarn"
-
 > (substring "corduroys" 0 4)            ; extract a substring
 "cord"
-
 > (string-length "shoelace")             ; get a string's length
 8
-
 > (string? "Ceci n'est pas une string.") ; recognize strings
 #t
-
 > (string? 1)
 #f
-
 > (sqrt 16)                              ; find a square root
 4
-
 > (sqrt -16)
 0+4i
-
 > (+ 1 2)                                ; add numbers
 3
-
 > (- 2 1)                                ; subtract numbers
 1
-
 > (< 2 1)                                ; compare numbers
 #f
-
 > (>= 2 1)
 #t
-
 > (number? "c'est une number")           ; recognize numbers
 #f
-
 > (number? 1)
 #t
-
 > (equal? 6 "half dozen")                ; compare anything
 #f
-
 > (equal? 6 6)
 #t
-
 > (equal? "half dozen" "half dozen")
 #t
 ```
@@ -288,6 +273,7 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
     (if (equal? "hello" (substring s 0 5))
     "hi!"
     "huh?"))
+
 > (reply "hello racket")
 "hi!"
 > (reply "λx:(μα.α→α).xx")
@@ -341,8 +327,8 @@ and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否�
         (if (equal? "goodbye" (substring s 0 7))
             "bye"
             (if (equal? "?" (substring s (- (string-length s) 1)))
-            "I don't know"
-            "huh?"))))
+                "I don't know"
+                "huh?"))))
 ```
 一系列测试的另一种简便写法是[cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29)形式：
 ```
