@@ -361,4 +361,44 @@ and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否�
 ```
 ( <表达式> <表达式>* )
 ```
+第一个<表达式>通常是一个<标识符>，比如[string-append](https://docs.racket-lang.org/reference/strings.html#%28def._%28%28quote._~23~25kernel%29._string-append%29%29)或者[+](https://docs.racket-lang.org/reference/generic-numbers.html#%28def._%28%28quote._~23~25kernel%29._%2B%29%29)，但是它可以是任何一个可执行的函数。例如，可以是一个条件表达式：
+```
+(define (bouble v)
+    ((if (string? v) string-append +) v v))
+
+> (double "mnah")
+"mnahmnah"
+
+> (double 5)
+10
+```
+从语法上看，第一个<表达式>甚至可以是一个数字，但是这个会出错，因为数字不是一个函数。
+```
+> (1 2 3 4)
+application: not a procedure;
+ expected a procedure that can be applied to arguments
+  given: 1
+  arguments...:
+   2
+   3
+   4
+```
+当你省略了函数名或者执行表达式使用额外的圆括号时，通常你会碰到一个像这样的“expected a procedure”错误
+
+#### 2.2.7 lambda匿名函数
+如果你为每个数字都起一个名字，racket程序将会特别枯燥。比如一个一个(+ 1 2)，你得这样：
+```
+> (define a 1)
+> (define b 2)
+> (+ a b)
+3
+```
+同理，给所有函数命名通常也会非常枯燥。比如，你定义一个函数twice，它接受一个函数和一个参数。如果你已经有一个函数，执行twice会很方便，比如[sqrt](https://docs.racket-lang.org/reference/generic-numbers.html#%28def._%28%28quote._~23~25kernel%29._sqrt%29%29):
+```
+(define (twice f v)
+    (f (f v)))
+
+> (twice sqrt 16)
+2
+```
 
