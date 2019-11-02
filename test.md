@@ -401,4 +401,65 @@ application: not a procedure;
 > (twice sqrt 16)
 2
 ```
+如果你想调用一个你还未定义的函数，你也可以定义它，然后传给twice：
+```
+(define (louder s)
+    (string-append s "!"))
+
+> (twice louder "hello")
+"hello!!"
+```
+但是，如果louder只在twice一个地方调用，一个完整的定义会十分难受。在racket中，你可以使用一个[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)表达式直接提供一个函数。lambda表达式使用<标识符>*作为函数的参数，函数体是 <表达式>+：
+```
+(lambda ( <标识符>* ) <表达式>+ )
+```
+[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)自身作为一个函数执行：
+```
+> (lambda (s) (string-append s "!"))
+#<procedure>
+```
+使用[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)重写上面的twice可以这样：
+```
+> (twice (lambda (s) (string-append s "!"))
+         "hello")
+"hello!!"
+> (twice (lambda (s) (string-append s "?!"))
+         "hello")
+"hello?!?!"
+```
+另一个使用[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)的方式是作为函数的结果来生成函数：
+```
+(define (make-add-suffix s2)
+    (lambda (s) (string-append s s2)))
+
+> (twice (make-add-suffix "!") "hello")
+"hello!!"
+> (twice (make-add-suffix "?!") "hello")
+"hello?!?!"
+> (twice (make-add-suffix "...") "hello")
+"hello......"
+```
+racket是一个基于词法作用域的语言，这表示make-add-suffix返回的函数中的s2，在调用这个函数时，总是引用该参数。换句话说，lambda生成的函数记住了s2：
+```
+> (define louder (make-add-suffix "!"))
+> (define less-sure (make-add-suffix "?"))
+> (stice less-sure "really")
+"really??"
+>> (twice louder "really")
+"really!!"
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
