@@ -448,6 +448,21 @@ racket是一个基于词法作用域的语言，这表示make-add-suffix返回�
 >> (twice louder "really")
 "really!!"
 ```
+到目前为止，我们已经在非函数定义中提到过这种定义(define <标识符> <表达式>)。这种描述具有误导性，因为<表达式>可以是一个[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)形式，这种情况下，这种定义相当于是一这个“function”定义的形式。例如，下面两种形式是一样的：
+```
+(define (louder s)
+    (string-append s "!"))
+
+(define louder
+    (lambda (s)
+        (string-append s "!")))
+
+> louder
+#<procedure:louder>
+```
+请注意，第二个louder函数是一个用lambda写的匿名函数，但是，编译器会尽可能推断一个名称使打印和错误报告更有意义和更具可读性。
+
+#### 2.2.8本地绑定
 
 
 
