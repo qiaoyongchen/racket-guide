@@ -354,8 +354,11 @@ and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否�
 > (reply-more "mine is lime green")
 "huh?"
 ```
+在 [cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29) 使用方括号只是一种惯例。在racket中方括号和圆括号实际上是可互换的，只要 ( 匹配 ) ， [ 匹配 ] 就行。在一些关键地方使用方括号会使得代码更可读一点。
 
-
-
-
+#### 2.2.6又是函数调用
+在之前的程序中，我们介绍的函数调用过于简单了。函数调用实际上可以允许任意表达式，而不只是一个<标识符>：
+```
+( <表达式> <表达式>* )
+```
 
