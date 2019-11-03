@@ -496,9 +496,27 @@ starts?: undefined;
 (let ( {[ <标识符> <表达式>]}* ) <表达式>+ )
 ```
 没一个绑定子句都用方括号包围着一个<标识符>和一个<表达式>，所有子句后面的<表达式>+是[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)执行体。每个子句中，<标识符>都被并定成<表达式>的执行结果，并可以在[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)的执行体中使用。
-
-
-
+```
+> (let ([x (random 4)]
+        [o (random 4)])
+    (cond
+        [(> x o) "X wins"]
+        [(> o x) "O wins"]
+        [else "cat's game"]))
+ "cat's game"
+```
+[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)形式的绑定只能在它的执行体中其作用，所以它的子句中的绑定不能相互引用。相反，[let*](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%2A%29%29)形式允许后面的子句引用前面子句的绑定：
+```
+> (let* ([x (random 4)]
+         [o (random 4)]
+         [diff (number->string (abs (- x o)))])
+    (
+     [(> x o) (string-append "X wins by " diff)]
+     [(> o x) (string-append "O wins by " diff)]
+     [else "cat's game"]))
+ "O wins by 1"
+```
+### 2.3列表，迭代和递归
 
 
 
