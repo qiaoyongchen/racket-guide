@@ -462,9 +462,40 @@ racket是一个基于词法作用域的语言，这表示make-add-suffix返回�
 ```
 请注意，第二个louder函数是一个用lambda写的匿名函数，但是，编译器会尽可能推断一个名称使打印和错误报告更有意义和更具可读性。
 
-#### 2.2.8本地绑定
+#### 2.2.8局部绑定 define， let， let*
+是时候介绍racket语法的另一个简化了。在函数体中，可以在函数体表达式之前进行定义:
+```
+(define ( <标识符> <标识符>* ) <定义>* <表达式>+ )
+(lambda ( <标识符>* ) <定义>* <表达式>+ )
+```
+在函数体开始处的定义，只对该函数体生效。
+例如：
+```
+(define (converse s)
+    (define (starts? s2) ; local to converse
+        (define len2 (string-length s2)) ; local to starts?
+        (and (>= (string-length s) len2)
+             (equal? s2 (substring s 0 len2))))
+    (cond 
+     [(starts? "hello") "hi!"]
+     [(starts? "goodbye") "bye!"]
+     [else "huh?"]))
 
+> (converse "hello!")
+"hi!"
+> (converse "urp")
+"huh?"
 
+> starts? ; outside of converse, so...
+starts?: undefined;
+ cannot reference an identifier before its definition
+  in module: top-level
+```
+[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)形式是另一种创建局部绑定的方法。[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)的另一个优点是它可以用于任何表达式。另外，它还可以一次绑定多个标识符，而不需要为每个标识符单独定义。
+```
+(let ( {[ <标识符> <表达式>]}* ) <表达式>+ )
+```
+没一个绑定子句都用方括号包围着一个<标识符>和一个<表达式>，所有子句后面的<表达式>+是[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)执行体。每个子句中，<标识符>都被并定成<表达式>的执行结果，并可以在[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)的执行体中使用。
 
 
 
