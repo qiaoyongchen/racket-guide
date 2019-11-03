@@ -517,7 +517,7 @@ starts?: undefined;
  "O wins by 1"
 ```
 ### 2.3列表，迭代和递归
-
+racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置的列表数据结构仍然是该语言的突出特性。
 
 
 
