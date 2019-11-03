@@ -519,6 +519,14 @@ starts?: undefined;
 ### 2.3列表，迭代和递归
 racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置的列表数据结构仍然是该语言的突出特性。
 
+[list](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._list%29%29)函数可以传入任何数量的值，返回一个包含这些值的列表：
+```
+> (list "red" "green" "blue")
+'("red" "green" "blue")
+> (list 1 2 3 4 5)
+'(1 2 3 4 5)
+```
+正如你所看到的，一个列表的结果在[REPL](https://docs.racket-lang.org/guide/intro.html#%28tech._repl%29)中以'的方式被打印出来，并且用一对圆括号包裹元素列表。
 
 
 
