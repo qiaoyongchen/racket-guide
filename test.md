@@ -526,8 +526,23 @@ racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置�
 > (list 1 2 3 4 5)
 '(1 2 3 4 5)
 ```
-正如你所看到的，一个列表的结果在[REPL](https://docs.racket-lang.org/guide/intro.html#%28tech._repl%29)中以'的方式被打印出来，并且用一对圆括号包裹元素列表。
-
+正如你所看到的，一个列表的结果在[REPL](https://docs.racket-lang.org/guide/intro.html#%28tech._repl%29)中以'的方式被打印出来，并且用一对圆括号包裹元素列表。这可能是一个让人迷惑的地方，因为圆括号被同时用于表达式（比如(list "red" "green" "blue")）和被打印的结果（比如'("red" "green" "blue")）。除了单引号外，表示结果的圆括号在文档和DrRacket中都用蓝色显示，而用于表达式的圆括号用棕色显示。
+许多预定义的函数用来操作列表。下面举一些列子：
+```
+> (length (list "hop" "skip" "jump")) ; count the elements
+3
+> (list-ref (list "hop" "skip" "jump") 0) ;extract by position
+"hop"
+> (list-ref (list "hop" "skip" "jump") 1)
+"skip"
+> (append (list "hop" "skip") (list "jump")) ;combine lists
+'("hop" "skip" "jump")
+> (reverse (list "hop" "skip" "jump")) ;reverse order
+'("jump" "skip" "hop")
+> (member "fall" (list "hop" "skip" "jump")) ; check for an element
+#f
+```
+#### 2.3.1内置的列表循环
 
 
 
