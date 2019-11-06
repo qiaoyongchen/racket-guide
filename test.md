@@ -543,7 +543,26 @@ racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置�
 #f
 ```
 #### 2.3.1内置的列表循环
+除了像[append](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._append%29%29)这样的简单操作，racket还提供了许多方法用来迭代列表中的元素。这些迭代方法和java、racket或者其他语言中的[for](https://docs.racket-lang.org/reference/for.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._for%29%29)一样。racket迭代的迭代体被封装进函数用来依次应用到每个元素，所以[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)和迭代函数结合使用将十分方便。
 
+不同的迭代函数以不同的方式组合迭代结果。[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)函数使用每个元素的结果产生一个新的列表：
+```
+> (map sqrt (list 1 4 9 16))
+'(1 2 3 4)
+> (map (lambda (i)
+            (string-append i "!"))
+        (list "peanuts" "popcorn" "crackerjack"))
+'("peanuts" "popcorn" "crackerjack")
+```
+[andmap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)和[ormap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._ormap%29%29)会调用[and](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._and%29%29)或[or](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._or%29%29)来组合产生的结果。
+```
+> (andmap string? (list "a" "b" "c"))
+#t
+> (andmap string? (list "a" "b" 6))
+#f
+> (ormap number? (list "a" "b" 6))
+#t
+```
 
 
 
