@@ -587,5 +587,29 @@ racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置�
 ```
 尽管它的场景很普遍，但是依然没有像其他函数那样被频繁使用。其中一个原因是[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)、[ormap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._ormap%29%29)、[andmap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)和[filter](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)涵盖了列表处理的大部分场景。
 
+racket还提供了一个通用的列表处理形式[for/list](https://docs.racket-lang.org/reference/for.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._for%2Flist%29%29)，它通过遍历一个序列来构建一个列表。列表和相关迭代形式将会在[Iterations and Comprehensions](https://docs.racket-lang.org/guide/for.html)中介绍。
+
+#### 2.3.2重头开始进行列表迭代
+尽管[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)和其他迭代方法都预先内置了，但是它们都是原始的方式。你可以通过使用列表原语来生成等效的迭代。
+
+因为racket的列表是一个链表，所以在一个非空的列表中，两个核心的是
+- [first](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._first%29%29):获取列表中的第一个东西；
+- [rest](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._rest%29%29)获取列表中剩余的东西。
+
+比如：
+```
+> (first (list 1 2 3))
+1
+> (rest (list 1 2 3))
+'(2 3)
+```
+
+
+
+
+
+
+
+
 
 
