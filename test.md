@@ -495,7 +495,7 @@ starts?: undefined;
 ```
 (let ( {[ <标识符> <表达式>]}* ) <表达式>+ )
 ```
-没一个绑定子句都用方括号包围着一个<标识符>和一个<表达式>，所有子句后面的<表达式>+是[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)执行体。每个子句中，<标识符>都被并定成<表达式>的执行结果，并可以在[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)的执行体中使用。
+每一个绑定子句都用方括号包围着一个<标识符>和一个<表达式>，所有子句后面的<表达式>+是[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)执行体。每个子句中，<标识符>都被并定成<表达式>的执行结果，并可以在[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)的执行体中使用。
 ```
 > (let ([x (random 4)]
         [o (random 4)])
