@@ -563,9 +563,29 @@ racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置�
 > (ormap number? (list "a" "b" 6))
 #t
 ```
-
-
-
+[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)、[andmap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)和[ormap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._ormap%29%29)函数不仅可以处理单个列表也可以同时处理多个列表。被处理的表达式必须长度相同，接受的函数从每个列表中取一个元素作为参数：
+```
+(map (lambda (s n) (substring s 0 n))
+     (list "peanuts" "popcorn" "crackerjack")
+     (list 6 3 7))
+'("peanut" "pop" "cracker")
+```
+[filter](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Flist..rkt%29._filter%29%29)函数会保留迭代体执行后返回真的元素，丢弃返回#f的元素:
+```
+> (filter string? (list "a" "b" 6))
+'("a" "b")
+> (filter positive? (list 1 -2 6 7 0))
+'(1 6 7)
+```
+[foldl](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Flist..rkt%29._foldl%29%29)扩充了一些迭代函数。它使用一个函数处理一个元素并把该元素和当前值组合，所以这个函数需要有一个额外的初始值。此外初始值必须在列表之前就被提供：
+```
+> (foldl (lambda (elem v)
+            (+ v (* elem elem)))
+         0
+         '(1 2 3))
+14
+```
+尽管它的场景很普遍，但是依然没有像其他函数那样被频繁使用。其中一个原因是[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)、[ormap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._ormap%29%29)、[andmap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)和[filter](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)涵盖了列表处理的大部分场景。
 
 
 
