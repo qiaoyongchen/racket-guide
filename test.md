@@ -604,7 +604,14 @@ racket还提供了一个通用的列表处理形式[for/list](https://docs.racke
 '(2 3)
 ```
  给一个链表添加一个元素，可以适应[cons](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cons%29%29)(“construct”的缩写)把元素添加到列表的前面。如果是空列表，可以使用常量[empty](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._empty%29%29)。
-
+```
+> empty
+'()
+> (cons "head" empty)
+'("head")
+> (cons "dead" (cons "head" empty))
+'("dead" "head")
+```
 
 
 
