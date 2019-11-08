@@ -603,7 +603,7 @@ racket还提供了一个通用的列表处理形式[for/list](https://docs.racke
 > (rest (list 1 2 3))
 '(2 3)
 ```
-
+ 给一个链表添加一个元素，
 
 
 
