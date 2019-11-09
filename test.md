@@ -743,6 +743,61 @@ my-length和my-map表明迭代只是一种特殊形式的递归。在许多语�
 ```
 
 ### 2.4 序对、列表和racket语法
+[cons](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cons%29%29)函数实际上接收两个值，第二个参数并不仅仅是列表。当第二个参数不是[empty](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._empty%29%29)或者不是[cons](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cons%29%29)自己生成的值，结果以特殊的方式打印。用[cons](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cons%29%29)连接的两个值被打印成在括号之间，但是之间有一个点（被空格包围的句号）：
+```
+> (cons 1 2)
+'(1 . 2)
+> (cons "banana" "split")
+'("banana" . "split")
+```
+因此，被[cons](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cons%29%29)生成的值并总是列表。一般来说，[cons](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cons%29%29)的结果是一个序对。对[cons](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._cons~3f%29%29)来说，更传统的函数名是[pair?](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._pair~3f%29%29)，从现在开始我们将使用传统的名字。
+
+[rest](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._rest%29%29)对非列表序对也没什么作用；对于[first](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._first%29%29)和[rest](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._rest%29%29)更传统的名字分别是[car](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._car%29%29)和[cdr](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cdr%29%29)。（当然，传统的名字也是胡说八道，只需要知道“a”在“d”前面，cdr的发音为“could-er”）
+
+比如
+```
+> (car (cons 1 2))
+1
+> (cdr (cons 1 2))
+2
+> (pairs? empty)
+#f
+> (pairs? (cons 1 2))
+#t
+> (pairs? (list 1 2 3))
+#t
+```
+
+racket的序对数据类型，及其它和列表的关系，包括点的打印和有趣的名字（car 和 cdr）是一个历史问题。然而序对和racket的文化、规范、实现紧密相连，这是它们得以保存的原因。
+
+当你出错是，大部分原因可能是你遇到了非列表序对的问题，比如颠倒了[cons](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cons%29%29)的参数：
+```
+> (cons (list 1 2 3) 1)
+'((2 3) . 1)
+> (cons 1 (list 2 3))
+'(1 2 3)
+```
+非数组序对有时故意被使用。比如，函数[make-hash](https://docs.racket-lang.org/reference/hashtables.html#%28def._%28%28quote._~23~25kernel%29._make-hash%29%29)使用一个序对的列表，[car](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._car%29%29)对于每个序对来是是key，[cdr](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cdr%29%29)是value。
+
+对于racket新手来说，唯一一件比非列表序对更加困惑的事是：一个序对，但是第二个参数是序对而不是列表的打印方式。
+```
+> (cons 0 (cons 1 2))
+'(0 1 . 2)
+```
+一般来说，打印序对的方式是这样的：用点表示除非点后面紧跟一个左圆括号。在那种情况下，移除点、左圆括号然后匹配右圆括号。因此'(0 . (1 . 2))变成'(0 1 . 2)，'(1 . (2 . (3 . ()))变成'(1 2 3)。
+
+#### 2.4.1引用序对和带引号的符号
+列表被打印出来会带有引号，但是列表中的一个元素是列表，内部的列表打出出来不带引号：
+```
+> (list (list 1) (list 2 3) (list 4))
+'((1) (2 3) (4))
+```
+
+
+
+
+
+
 
 
 
