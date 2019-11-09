@@ -612,11 +612,75 @@ racket还提供了一个通用的列表处理形式[for/list](https://docs.racke
 > (cons "dead" (cons "head" empty))
 '("dead" "head")
 ```
+为了处理列表，我们需要能区分空列表和非空列表，因为[first](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._first%29%29)和[rest](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._rest%29%29)只能处理非空列表。[empty?](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._empty~3f%29%29)函数用来区分空列表，[cons?](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._cons~3f%29%29)用来区分非空列表。
+```
+> (empty? empty)
+#t
+> (empty? (cons "head" empty))
+#f
+> (cons? empty)
+#f
+> (cons? (cons "head" empty))
+#t
+```
+有了以上这些，你可以写出自己的[length](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._length%29%29)函数、[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)函数，以及更多的其他函数。
 
+比如：
+```
+(define (my-length lst)
+    (cond
+        [(empty? lst) 0]
+        [else (+ 1 (my-length (rest lst)))]))
 
+> (my-length empty)
+0
+> (my-length (list "a" "b" "c"))
+3
+```
 
+```
+(define (my-map f lst)
+    (cond
+        [(empty? lst) empty]
+        [else (cons (f (first lst))
+                    (my-map (rest lst)))]))
 
+> (my-map string-upcase (list "ready" "set" "go"))
+'("READY" "SET" "GO")
+```
+如果上面的定义对你来说比较难懂，考虑阅读[How to Design Programs](http://www.htdp.org/)。但是如果你仅仅疑惑上面用递归代替迭代的用法，请继续阅读。
 
+#### 2.3.3尾递归
+my-length和my-map都运行在O(n)的算法空间上(n是列表长度)。想象一下(my-length (list "a" "b" "c"))怎样运行就很容易知道。
+```
+(my-length (list "a" "b" "c"))
+= (+ 1 (my-length (list "b" "c")))
+= (+ 1 (+ 1 (my-length (list "c"))))
+= (+ 1 (+ 1 (+ 1 (my-length (list)))))
+= (+ 1 (+ 1 (+ 1 0)))
+= (+ 1 (+ 1 1))
+= (+ 1 2)
+= 3
+```
+对于一个有n个元素的列表，运行时会堆叠n个(+ 1 ...)，最后当列表迭代完再把他们累加起来。
 
-
-
+你可以通过一路增加结果来避免堆叠结果。我们需要一个函数(它接受一个列表和一个当前积累的长度)来积累长度。下面的代码使用一个局部函数，它用一个参数len表示当前积累的长度：
+```
+(define (my-length lst)
+    ; local function iter
+    (define (iter lst len)
+        (cond
+            [(empty? lst) len]
+            [else (iter (rest lst) (+ lenn 1))]))
+    ; body of my-length calls iter
+    (iter lst 0))
+```
+运行起来就像这样：
+```
+(my-length (list "a" "b" "c"))
+= (iter (list "a" "b" "c") 0)
+= (iter (list "b" "c") 1)
+= (iter (list "c") 2)
+= (iter (list) 3)
+3
+```
