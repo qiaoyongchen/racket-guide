@@ -841,10 +841,27 @@ racket的序对数据类型，及其它和列表的关系，包括点的打印�
 > (symbol->string (quote map))
 "map"
 ```
+和作用于列表的[quote](https://docs.racket-lang.org/reference/quote.html#%28form._%28%28quote._~23~25kernel%29._quote%29%29)自动转换为嵌套列表一样，[quote](https://docs.racket-lang.org/reference/quote.html#%28form._%28%28quote._~23~25kernel%29._quote%29%29)应用于圆括号中的标识符自动生成符号列表：
+```
+> (car (quote (road map)))
+'road
+> (symbol? (car (quote (road map))))
+#t
+```
+当一个符号在用'表示的被打印列表中时，'会被省略，因为'已经做了这些工作了：
+```
+> (quote (road map))
+'(road map)
+```
+[quote](https://docs.racket-lang.org/reference/quote.html#%28form._%28%28quote._~23~25kernel%29._quote%29%29)对字面量表达式无效，比如一个数字或字符串：
+```
+> (quote 42)
+42
+> (quote "on the record")
+"on the record"
+```
 
-
-
-
+#### 2.4.2quote的缩写，'
 
 
 
