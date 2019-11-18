@@ -1035,6 +1035,63 @@ abs: contract violation
 3602879701896397/36028797018963968
 ```
 ### 3.3字符
+没一个racket字符都对应一个Unicode标量值。一般地讲，这个标量值是一个21位的无符号整型，并且映射为一个自然语言的字符或者字符片段。从技术上讲，虽然这个标量是一个比Unicode标准中“字符”概念更简单的概念，但是这是一个近似很多用途的近似值。比如，任何一个带重音的罗马字母或普通汉字可以被表示为一个标量值。
+
+尽管每个racket字符对应一个整型，但是字符的数据类型是区别于数字的。函数char->integer和integer->char用于转换标量数字和对应字符。
+
+可打印的字符通常打印为#\后跟表示的字符。不能打印的字符通常打印为#\u后跟十六进制的标量值。有一些字符打印的很特殊。比如，空格和换行分别打印为#\space和#\newline
+
+例子:
+```
+> (integer->char 65)
+#\A
+> (char->integer #\A)
+65
+> #\λ
+#\λ
+> #\u03BB
+#\λ
+> (integer->char 17)
+#\u0011
+> (char->integer #\space)
+32
+```
+函数display直接把字符写到当前的输出接口（详情[Input and Output](https://docs.racket-lang.org/guide/i_o.html)）,这与用于打印字符结果的字符常量语法不一样。
+例子：
+```
+> #\A
+#\A
+> (display #\A)
+A
+```
+racket为字符提供了一些分类和转换函数。但是请注意，有些字符的转换只有在字符串中才能像人们期望的那用工作。（比如，大写 “ß” 或者小写 “Σ”）
+
+例子：
+```
+> (char-alphabetic? #\A)
+#t
+> (char-numeric? #\0)
+#t
+> (char->whitespace? #\newline)
+#t
+> (char-downcase #\A)
+#\a
+> (char-upcase #\ß)
+#\ß
+```
+函数 char=? 用于比较至少两个字符，char-ci=?用于比较忽略大小写的情况。函数eqv? 和 equal? 作用于字符时的行为和char=?一样。当你更明确要比较的是字符时，使用char=?。
+
+例子：
+```
+> (char=? #\a #\A)
+#f
+> (char-ci=? #\a #\A)
+#t
+> (qev? #\a #\A)
+#f
+```
+
+### 3.4
 
 
 
