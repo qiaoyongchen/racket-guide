@@ -1261,8 +1261,18 @@ Apple
 ```
 
 ### 3.7关键字
+关键字类似符号，但是它的打印形式会被加上 # 前缀。
 
-
+例如：
+```
+> (string->keyword "apple")
+'#:apple
+>'#:apple
+'#:apple
+> (eq? '#:apple (string->keyword "apple"))
+#t
+```
+跟准确的说，关键字和标识符相似。
 
 
 
