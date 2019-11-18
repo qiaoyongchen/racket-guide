@@ -1223,11 +1223,44 @@ for the current locale
 ```
 ( ) [ ] { } " , ' ` ; # | \ 
 ```
+实际上， # 只有在位于符号开头和后面紧跟 % 的情况下才被禁止。其他情况#也是可以允许的。 . 自身不能做为一个符号。
 
+空格或者特殊字符可以被包围进一个标识符，通过 | 或 \ 来引用他们。这些引用机制通过包含特殊字符或看起来想数字标识符的形式引用。
+例子：
+```
+> (string->symbol "one, two")
+'|one, two|
+> (string->symbol "6")
+'|6|
+```
 
+函数 write 打印一个无 ' 前缀的符号。display打印形式的符号和其对应字符串一样。
 
+例子：
+```
+> (write 'Apple)
+Apple
+> (write 'Apple)
+Apple
+> (write '|6|)
+|6|
+> (display '|6|)
+6
+```
+函数 gensym 和 string->uninterned-symbol 生成新的不被理解的符号，这和任何之前被识别或者不被理解的符号都不同。不被理解的符号作为新标记非常有用，它不能与任何其他值混淆。
 
+例子：
+```
+> (define s (gensym))
+> s
+'g42
+> (eq? s 'g42)
+#f
+> (eq? 'a (string->uninterned-symbol "a"))
+#f
+```
 
+### 3.7关键字
 
 
 
