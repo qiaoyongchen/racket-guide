@@ -1123,11 +1123,23 @@ lines
 > s
 "..λ.."
 ```
-字符串排序和大小写操作通常是地区无关的，他们对任何用户都一样。一些地区相关的操作被提供来允许终端用户根据语言环境对字符串进行大小写折叠和排序。
+字符串排序和大小写操作通常是地区无关的，他们对任何用户都一样。一些地区相关的操作被提供来允许最终用户根据语言环境对字符串进行大小写折叠和排序。如果你在排序字符串，请使用string<? 或者 string-ci<?，如果排序结果应在计算和和用户之间保持一致，请使用 string-local<? 或者 string-local-ci<?。
 
+例子：
+```
+> (string<? "apple" "Banana")
+#f
+> (string-ci<? "apple" "Banana")
+#t
+> (string-upcase "Straße")
+"STRASSE"
+> (parameterize ([current-locale "C"])
+    (string-locale-upcase "Straße"))
+"STRAßE"
+```
+对用使用纯ASCII、使用原始字节或将Unicode编码/解码为字节，请使用字节字符串。
 
-
-
-
+### 3.5字节和字节串
+字节是一个介于0到255的精确整型。谓词 byte? 用于识别表示字节的数字。
 
 
