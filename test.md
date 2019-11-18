@@ -1142,4 +1142,94 @@ lines
 ### 3.5字节和字节串
 字节是一个介于0到255的精确整型。谓词 byte? 用于识别表示字节的数字。
 
+字节串类似字符串，但是它的包含的是字节序列而不是字符序列。字节串可以被用于处理纯ASCII码而不是Unicode文本。字节串的打印方式非常使适用这种方法，因为字节串的打印方式类似于ASCII码的字节串解码，但是前缀是#。不能打印的ASCII字符或者非ASCII字符用八进制写入。
+```
+> #"Apple"
+#"Apple"
+> (bytes-ref #"Apple" 0)
+65
+> (make-bytes 3 65)
+#"AAA"
+> (define b (make-bytes 2 0))
+> b
+#"\0\0"
+> (bytes-set! b 0 1)
+> (bytes-set! b 255)
+> b
+#"\1\377"
+```
+字节串的display形式写入原始字符到当前输出端口。从技术上讲，用于字符串的display打印字符串的UTF-8编码到输出端口，因为输出最终是以字节定义的；然而，用于字节串的display会把原始字节而非编码过的写入。同样，当本文档显示输出时，在技术上显示了输出的UTF-8解码形式。
+
+例子：
+```
+> (display #"Apple")
+Apple
+> (display "\316\273")  ; same as "Î»"
+Î»
+> (display #"\316\273") ; UTF-8 encoding of λ
+λ
+```
+为了在字符串和字节串之间转换，racket直接支持三种形式的编码：UTF-8,Latin-1,和当前本地的编码。字节到字节转换（特别是到UTF-8和从UTF-8）的通用工具填补了支持任意字符串编码的空白。
+
+例子：
+```
+> (bytes->string/utf-8 #"\316\273")
+"λ"
+> (bytes->string/latin-1 #"\316\273")
+"Î»"
+> (parameterize ([current-locale "C"])  ; C locale supports ASCII,
+    (bytes->string/locale #"\316\273")) ; only, so...
+bytes->string/locale: byte string is not a valid encoding
+for the current locale
+  byte string: #"\316\273"
+> (let ([cvt (bytes-open-converter "cp1253" ; Greek code page
+                                   "UTF-8")]
+        [dest (make-bytes 2)])
+    (bytes-convert cvt #"\353" 0 1 dest)
+    (bytes-close-converter cvt)
+    (bytes->string/utf-8 dest))
+"λ"
+```
+
+### 3.6符号
+符号是一个原子值，打印方式类似以 ' 开头的标识符。以 ' 开始后面跟标识符的表达式生成一个符号值。
+
+例子：
+```
+> 'a
+'a
+> (symbol? 'a)
+#t
+```
+对于任何字符序列，只保留一个对应的符号。调用函数 string->symbol 或者读取语法标识符会生成一个临时符号。因为符号可以方便的使用 eq? （还有 eqv? 和 equal?）进行比较，符号被用来作为一个方便的标记值和枚举值。
+
+符号是大小写敏感的。通过使用 #ci 前缀或者其他方式，将使得读取器使用一个大小写转换过的符号，但是读取器默认保留大小写。
+
+例子：
+```
+> (eq? 'a 'a)
+#t
+> (eq? 'a (string->symbol "a"))
+#t
+> (eq? 'a 'b)
+#f
+> (eq? 'a 'A)
+#f
+> #ci'A
+'a
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
