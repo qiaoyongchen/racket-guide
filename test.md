@@ -1361,7 +1361,55 @@ eval:2:0: #%datum: keyword misused as an expression
 > (display (list 1 2 "3"))
 (1 2 3)
 ```
+迭代列表元素函数是最终要的列表内置函数：
+```
+> (map (lambda (i) (/ 1 i))
+       '(1 2 3))
+'(1 1/2 1/3)
+> (andmap (lambda (i) (i . < . 3))
+          '(1 2 3))
+#f
+> (ormap (lambda (i) (i . < . 3))
+          '(1 2 3))
+#t
+> (filter (lambda(i) (i . < . 3))
+          '(1 2 3))
+'(1 2)
+> (foldl (lambda (v i) (+ v i))
+         10
+         '(1 2 3))
+16
+> (for-each (lambda (i) (display))
+            '(1 2 3))
+123
+> (member "keys"
+          '("Florida" "keys" "U.S.A"))
+'("Keys" "U.S.A")
+> (assoc 'where
+         '((when "3:30") (where "Florida" (who "Mickey"))))
+'(where "Florida")
+```
+序对是不可变的（与lisp的传统相反），函数 pair? 和 list? 只用来识别不可变的序对和列表。函数 mcons 用来创建可变的序对，它与 set-mcar!、 set-mcdr!、mcar、mcdr一起使用。可变的序对使用 mcons 打印，当用 write 和 display 打印可变序对时会使用 { 和 }。
+例子：
+```
+> (define p (mcons 1 2))
+> p
+(mcons 1 2)
+> (pair? p)
+#f
+> (mpair? p)
+#t
+> (set-mcar! p 0)
+> p
+(mcons 0 2)
+> (write p)
+{0 . 2}
+```
 
+### 3.9向量(vectors)
+向量是一个固定长度的、包含任意值的数组。与列表不同，向量支持对其元素的固定时间的访问和更新。
+
+向量和列表类似，用圆括号括起其元素序列，但是向量前缀会在 ' 后面加上 #，或者当其中一个元素不能使用 quote 时，使用 vecotr 表示。
 
 
 
