@@ -1272,7 +1272,37 @@ Apple
 > (eq? '#:apple (string->keyword "apple"))
 #t
 ```
-跟准确的说，关键字和标识符相似。
+更准确的说，关键字和标识符相似。和标识符前面加 ' 生成一个符号一样，一个关键字前面加 '#: 生成一个值。在这两种情况下都使用属于“关键字”，但是有时我们使用关键字值更具体指引用关键字表达式或 string-keyword 函数的结果。没被引用的关键字不是表达式，就像没被引用的标识符不是一个符号一样：
+
+例子：
+```
+> not-a-symbol-expression
+not-a-symbol-expression: undefined;
+ cannot reference an identifier before its definition
+  in module: top-level
+> #:not-a-keyword-expression
+eval:2:0: #%datum: keyword misused as an expression
+  at: #:not-a-keyword-expression
+```
+虽然他们很相似，但是关键字的使用方法与标识符和符号不同。关键字是为了在参数列表和某些语法形式中用作特殊标记。对于运行时标志和枚举，请使用符号而不是关键字。下面的例子说明了关键字和符号的不同作用。
+```
+> (define dir (find-system-path ' temp-dir)) ; not '#:temp-dir
+> (with-output-to-file (build-path dir "stuff.txt")
+    (lambda () (printf "example\n"))
+    ; optional #:mode argument can be 'text or 'binary
+    #:mode 'text
+    ; optional #:exists argument can be 'replace, 'truncate, ...
+    #:exists 'replace
+```
+
+### 3.8序对和列表
+序对连接起两个任意的值。函数 cons 创建序对，函数 car 和 cdr 分别序对中提取第一个和第二个元素。谓词 pair? 用来识别序对。
+
+
+
+
+
+
 
 
 
