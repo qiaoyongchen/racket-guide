@@ -1298,13 +1298,69 @@ eval:2:0: #%datum: keyword misused as an expression
 ### 3.8序对和列表
 序对连接起两个任意的值。函数 cons 创建序对，函数 car 和 cdr 分别序对中提取第一个和第二个元素。谓词 pair? 用来识别序对。
 
+一些序对被打印为用圆括号包围两个被打印的元素，以 ' 开头并用 . 间隔元素。
 
+例子：
+```
+> (cons 1 2)
+'(1 . 2)
+> (cons (cons 1 2) 3)
+'((1 . 2) . 3)
+> (car (cons 1 2))
+1
+> (cdr (cons 1 2))
+2
+> (pair? (cons 1 2))
+#t
+```
+列表是创建链表的的序对的组合。更准确地说，列表要么是一个空列表 null，要么是一个列表，这个列表的第一个元素是一个列表元素，第二个元素是一个列表。谓词 list? 用来识别列表。谓词 null? 用来识别空列表。
 
+列表通常打印为 ' 后跟用圆括号包围起来的列表元素。
 
+例子：
+```
+> null
+'()
+> (cons 0 (cons 1 (cons 2 null)))
+'(0 1 2)
+> (list? null)
+#t
+> (list? (cons 1 (cons 2 null)))
+#t
+> (list? (cons 1 2))
+#f
+```
+当列表或序对中有元素不能用引号输出时，将会使用 list 和 cons 打印。比如，存在一个值用 srcloc 创建，不能用引号输出（它用srcloc打印）：
 
+```
+> (srcloc "file.rkt" 1 0 1 (+ 4 4))
+(srcloc "file.rkt" 1 0 1 8)
+> (list 'here (srcloc "file.rkt" 1 0 1 8) 'there)
+(list 'here (srcloc "file.rkt" 1 0 1 8) 'there)
+> (cons 1 (srcloc "file.rkt" 1 0 1 8))
+(cons 1 (srcloc "file.rkt" 1 0 1 8))
+> (cons 1 (cons 2 (src "file.rkt" 1 0 1 8)))
+(list* 1 2 (srcloc "file.rkt" 1 0 1 8))
+```
 
+如上面最后一个例子，list* 用于缩写一些列不能使用list的cons。
 
+函数 write 和 display 打印序对和列表是不使用 ' , cons, list 和 list*。除了他们使用列表元素外， write 和 display 对于序对和列表没有区别。
 
+```
+> (write (cons 1 2))
+(1 . 2)
+> (display (cons 1 2))
+(1 . 2)
+> (write null)
+()
+> (display null)
+()
+> (write (list 1 2 "3"))
+(1 2 "3")
+> (display (list 1 2 "3"))
+(1 2 3)
+```
 
 
 
