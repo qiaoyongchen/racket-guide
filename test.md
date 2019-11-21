@@ -1411,5 +1411,52 @@ eval:2:0: #%datum: keyword misused as an expression
 
 向量和列表类似，用圆括号括起其元素序列，但是向量前缀会在 ' 后面加上 #，或者当其中一个元素不能使用 quote 时，使用 vecotr 表示。
 
+向量作为表达式，提供了一个可选长度。此外向量作为表达式隐式引用其内容，这表示向量常量中的标识符和带元括号的形式表示符合和列表。
+
+```
+> #("a" "b" "c")
+'#("a" "b" "c")
+> #(name (that tune))
+'#(name (that tune))
+> #4(baldwin bruce)
+'#(baldwin bruce bruce bruce)
+> (vector-ref #("a" "b" "c") 1)
+"b"
+> (vector-ref #(name (that tune)) 1)
+'(that tune)
+```
+
+和字符串一样，向量分为可修改和不可修改的，直接以表达式的方式写出的向量是不可修改的。
+
+向量可以通过 vector->list 和 list->vector 和列表相互转换；这些转换与列表中内置的函数结合时特别有用。当分配额外的列表看起来非常昂贵时，可以考虑使用 for/fold 形式的循环，它可以识别向量和列表。
+
+```
+> (list->vector (map string-titlecase
+                     (vector->list #("three" "blind" "mice"))))
+'#("Three" "Blind" "Mice")
+```
+
+### 3.10哈希表（Hash Table）
+哈希表实现了一个用含有键和值的映射（键和值可以是任意的racket值，并且访问和更新这个表通常是常数时间的操作）。取决于哈希表是用 make-hash，make-hasheqv 还是make-hasheq 创建的，键可以被 equal?， eqv?， 或者 eq?来比较。
+```
+> (define ht (make-hash))
+> (hash-set! ht "apple" '(red round))
+> (hash-set! ht "banana" '(yellow long))
+> (hash-ref ht "apple")
+'(red round)
+> (hash-ref ht "coconut")
+hash-ref: no value found for key
+    key: "coconut"
+> (hash-ref ht "coconut" "not there")
+"not there"
+```
+
+
+
+
+
+
+
+
 
 
