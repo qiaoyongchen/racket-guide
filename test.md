@@ -1437,7 +1437,7 @@ eval:2:0: #%datum: keyword misused as an expression
 ```
 
 ### 3.10哈希表（Hash Table）
-哈希表实现了一个用含有键和值的映射（键和值可以是任意的racket值，并且访问和更新这个表通常是常数时间的操作）。取决于哈希表是用 make-hash，make-hasheqv 还是make-hasheq 创建的，键可以被 equal?， eqv?， 或者 eq?来比较。
+哈希表实现了一个用含有键和值的映射（键和值可以是任意的racket值，并且访问和更新这个表通常是常数时间的操作）。取决于哈希表是否是用 make-hash，make-hasheqv 还是make-hasheq 创建的，键可以被 equal?， eqv?， 或者 eq?来比较。
 ```
 > (define ht (make-hash))
 > (hash-set! ht "apple" '(red round))
@@ -1451,8 +1451,93 @@ hash-ref: no value found for key
 "not there"
 ```
 
+函数hash，hasheqv和hasheq从一个字面量的键值集合创建不可变的哈希表，在这种情况下值会在键之后以一个参数提供。
+不可变哈希表可以用 hash-set 扩充，这样会在常量的时间内创建一个新的不可变哈希表。
+```
+> (define ht (hash "apple" 'red "banana" 'yellow))
+> (hash-ref ht "apple")
+'red
+> (define ht2 (hash-set ht "coconut" 'brown))
+> (hash-ref ht "coconut")
+hash-ref: no value found for key
+    key: "coconut"
+> (hash-ref ht2 "coconut")
+'brown
+```
+一个字面量不可变哈希表会被写成 #hash（基于equal?的表）、 #hasheqv（基于eqv？的表）或者 #hasheq（基于eq?的表） 形式的表达式。圆括号对必须紧跟在#hash、#hasheq或者#hasheqv，并且每个元素必须是一个键-值点对。#hash等形式立即引用他们的键值。
+例子：
+```
+> (define ht #hash(("apple" . red)
+                   ("banana" . yellow)))
+> (hash-ref ht "apple")
+'red
+```
+可变和不可变哈希表都会像不可变哈希表一样打印，如果所有键值可以用引号表示，则使用带引号的hash、hasheqv或者hasheqv形式，否则使用hahs、hasheq或者hasheqv：
+例子：
+```
+> #hash(("apple" . red)
+        ("banana" . yellow))
+'#hash(("apple" . red) ("banana" . yellow))
+> (hash 1 (srcloc "file.rkt" 1 0 1 (+ 4 4)))
+(hash 1 (srcloc "file.rkt" 1 0 1 8))
+```
+可变哈希表可以选择性的弱保留它的键，也就是说每个映射只有在键保留在其他地方时才会保留。
+例子：
+```
+> (define ht (make-weak-hasheq))
+> (hash-set! ht (gensym) "can you see me?")
+> (collect-garbage)
+> (hash-count ht)
+0
+```
 
+请注意，即使是弱哈希表也会一直保留其值，只要相应的键是可访问的。
+例子：
 
+```
+> (define ht (make-weak-hasheq))
+> (let ([g (gensym)])
+    (hash-set! ht g (list g)))
+> (collect-garbage)
+> (hash-count ht)
+1
+
+> (define ht (make-weak-hasheq))
+> (let ([g (gensym)])
+    (hash-set! ht g (make-ephemeron g (list g))))
+> (collect-garbage)
+> (hash-count ht)
+0
+```
+
+### 3.11盒子（Boxes）
+
+盒子类似于单元素的向量。被打印为一个 #& 的引用后面跟着盒子值的打印形式。#& 形式也可以当成表达式使用，但是由于结果的盒子是常量，所以没什么用处。
+
+例子：
+```
+> (define b (box "apple"))
+> b
+'#&"apple"
+> (unbox b)
+"apple"
+> (set-box! b '(banana boat))
+> b
+'#&(banana boat)
+```
+
+### 3.12void和undefined
+一些函数和表达式不需要返回值。比如，display 函数被调用只是为了写入到输出端的副作用。在这些情况下，返回值通常是一个被打印为 #\<viod\> 的特殊常量。当一个表达式的结果仅仅是一个 #\<void\>，REPL不会打印任何东西。
+
+void 函数使用任意数量的参数，并且返回 #\<void\>。（那是因为，标识符 void 被绑定为一个返回#\<void\>的函数，而不是直接绑定为 #\<void\>。）
+
+例子：
+```
+> (void)
+> (void 1 2 3)
+> (list (void))
+'(#<void>)
+```
 
 
 
