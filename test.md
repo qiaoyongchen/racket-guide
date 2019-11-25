@@ -1597,6 +1597,48 @@ x: undefined;
 ```
 define 是 f 的一个绑定，lambda 是 x 的一个绑定， let 是 y 的一个绑定。f 的绑定范围是整个模块； x 的绑定范围是 (let ([y 5] (+ x y)))； y 的绑定范围仅仅是 (+ x y)。(+ x y)的环境包括 y、x和f的绑定，当然也包括racket中的所有东西。
 
+模块层的 define 只能绑定模块中未被定义或未被引用的标识符。然而，局部 define 或者其他绑定形式在标识符已经存在绑定的时候仍然可以进行绑定；新的绑定遮挡了(shadows)已经存在的绑定。
+
+例如：
+```
+(define f
+    (lambda (append)
+        (define cons (append "ugly" "confusing"))
+        (let ([append 'this-was])
+            (list append cons))))
+
+> (f list)
+'(this-was ("ugly" "confusing"))
+```
+
+类似的，模块层的 define 可以遮挡模块语言的绑定。例如：racket模块中的 (define cons 1) 遮挡了 racket 提供的 cons。故意遮挡语言层的绑定并不是个好主意（特别是像 cons 一样被广泛使用的绑定），但是遮挡使程序员不必避免语言提供的没一个模糊绑定。
+
+甚至像define和lambda这样的标识符也可以绑定，尽管它们有transformer绑定而不是值绑定。因为 define 有transformer绑定，所以标识符 define 不能被自身使用来获得值。然后 define 的正常绑定也可以被遮挡。
+
+例子：
+```
+> define
+eval:1:0: define: bad syntax
+    in: define
+> (let ([define 5]) define)
+5
+```
+
+同样，以这种方式遮挡标准绑定很少是一个好主意，但是这是racket的固有的灵活性。
+
+### 4.3函数调用
+当porc-expr 不是语法转换器的的标识符时（比如 if 和 define），这种形式的表达式
+```
+（proc-expr arg-expr ...）
+```
+是一个函数调用（也被成为过程应用）。
+
+#### 4.3.1执行顺序和数量
+
+
+
+
+
 
 
 
