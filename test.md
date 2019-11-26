@@ -1451,7 +1451,7 @@ hash-ref: no value found for key
 "not there"
 ```
 
-函数hash，hasheqv和hasheq从一个字面量的键值集合创建不可变的哈希表，在这种情况下值会在键之后以一个参数提供。
+函数hash，hasheqv和hasheq从一个字面量的键值集合创建不可变的哈希表，在这种情况下值会在键之后以一个参数提��。
 不可变哈希表可以用 hash-set 扩充，这样会在常量的时间内创建一个新的不可变哈希表。
 ```
 > (define ht (hash "apple" 'red "banana" 'yellow))
