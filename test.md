@@ -1,50 +1,58 @@
 # Racket 指南
-该教程是为Racket新手或对Racket某些部分不熟悉的人准备的。然而，它假设你已有编程经验，如果你是编程新手，可以考虑先看[How to Design Programs](http://www.htdp.org/)。如果你只想快速浏览Racket介绍，请点击[Quick: An Introduction to Racket with Pictures](https://docs.racket-lang.org/quick/index.html)。
+该教程是为Racket新手或对Racket某些部分不熟悉的人准备的。然而，它假设你已有编程经验，所以如果你是编程新手，可以考虑先看How to Design Programs。如果你只想快速浏览Racket介绍，请点击 Quick: An Introduction to Racket with Pictures。
 
-本指南第二章是Racket简介。从第三章开始，将详细介绍Racket工具箱的大部分内容，其他细节部分请参考[The Racket Reference](https://docs.racket-lang.org/reference/index.html)和其他参考手册。
+本指南第2章是Racket简单介绍。从第3章开始，将详细介绍Racket工具箱的大部分内容，其他细节部分请参考 The Racket Reference 和其他参考手册。
 
 ## 1 欢迎来到Racket
-取决于你如何看待它，Racket可以是
-- 编程语言 - 一个lisp方言，一个Scheme分支
+取决于你如何看待它，**Racket** 可以是
+- 一个编程语言 - 一个lisp方言，一个Scheme分支
 - 一系列语言 - Racket的变体
 - 一套工具 - 用于使用一系列语言
 
-没有特别说明的话，我们只是简单使用Racket语言本身。
+没有特别说明的话，我们只是简单使用 racket 语言本身。
 
-Racket的主要工具包括
-- Racket - 核心编译器，解释器和一个运行时的系统
-- DrRacket - 编程环境
-- raco - 用于执行racket命令来安装第三方包、构建库等操作的命令行工具。
+racket的主要工具包括:
+- **racket**， 核心编译器，解释器和运行时的系统
+- **DrRacket**， 编程环境
+- **raco**， 用于执行racket命令来安装第三方包、构建库等操作的命令行工具。
 
-通常你会通过DrRacket探索Racket，特别是在刚开始的时候。如果你愿意，你也可以通过你熟悉的文本编辑器和命令行来运行，详见[Command-Line Tools and Your Editor of Choice](https://docs.racket-lang.org/guide/other-editors.html)。本指南的其他部分将和你选择的编辑器无关。
+通常，特别是在刚开始的时候，你会通过DrRacket学习racket。如果你愿意，你也可以通过命令行和你熟悉的文本编辑器来运行。详见Command-Line Tools and Your Editor of Choice。本指南其他语言相关的部分将和你选择的编辑器无关。
 
-如果你使用DrRacket，你需要选择合适的语言，因为DrRacket提供了很多不同的Racket变体和其他语言。假设你之前从未使用过DrRacket，首先启动它，在文本区的顶部输入
+如果你使用了DrRacket，需要选择合适的语言，因为DrRacket提供了很多不同的Racket变体和其他语言。假设你之前从未使用过DrRacket，首先启动它，在文本区的顶部文本区输入
 ```
 #lang racket
 ```
-然后点击文本区上方的运行按钮。DrRacket会明白你的意思并在典型的Racket变体中运行(和更小一点的[racket/base](https://docs.racket-lang.org/reference/index.html)或很多其他选项不同)。如果你之前使用过DrRacket，它会记住你上次使用的语言，而不是从#lang行推断。选择 Language|Choose Language 菜单，将会出现一个对话框，选择第一项，告诉DrRacket通过#lang在源码中选择所选的语言。这仍将会把#lang放在文本区的顶部。
+然后点击文本区上方的运行按钮。DrRacket会明白你想要在典型的Racket变体中运行(这与更小一点的 racket/base 或很多其他选项不同)。
+
+如果你之前使用DrRacket，它会记住你上次使用的语言，而不是从 #lang 行推断。选择 **Language|Choose Language** 菜单，将会出现一个对话框，选择第一项，这会告诉DrRacket通过 #lang 在源码中选择所选的语言。这仍然会把 #lang 放在文本区的顶部。
 
 ### 1.1与Racket交互
-DrRacket文本区的下方和racket命令行程序(无参数启动)都扮演一个计算器。如果你输入一个Racket表达式，回车，结果便会被打印出来。在Racket的术语中，这种类型的计算器被称为read-eval-print loop 或简称为REPL。
+DrRacket的下方文本区和racket命令行(无参数启动)都扮演一个计算器的角色。你输入一个Racket表达式，回车，结果便会被打印出来。在racket的术语中被称为 *read-eval-print loop* 或简称为REPL。
 
-数字本身就是表达式，结果是这个数字：
+数字本身就是表达式，结果也仅仅是这个数字：
+
 ```
 > 5
 5
 ```
-字符串仍然是一个自运行的表达式。字符串表达式被写为首尾均是双引号的字符串：
+
+字符串仍然是自运行的表达式。字符串表达式被写为首尾均是双引号的字符串：
+
 ```
 > "Hello, world!"
 "Hello, world!"
 ```
-Racket用圆括号包围长表达式-几乎除了简单的常量以外的任何表达式。比如方法调用被写为:左圆括号，方法名，参数表达式，右圆括号。下面的表达式用参数"the boy out of the cpuntry"， 4， 7调用内置的方法[substring](https://docs.racket-lang.org/reference/strings.html#%28def._%28%28quote._~23~25kernel%29._substring%29%29)：
+
+Racket 用圆括号包围长表达式（几乎除了简单的常量以外的任何表达式）。比如，函数调用被写为：左圆括号，函数名，参数表达式，右圆括号。下面的表达式用参数 "the boy out of the cpuntry"， 4， 7调用内置的方法 substring：
+
 ```
 > (substring "the boy out of the country" 4 7)
 "boy"
 ```
 
 ### 1.2定义和交互
-你可以通过定义的形式定义一个类似substring的函数，就像这样：
+你可以通过 define 定义你自己的类似substring的函数，就像这样：
+
 ```
 （define (extract str)
     (substring str 4 7))
@@ -54,15 +62,19 @@ Racket用圆括号包围长表达式-几乎除了简单的常量以外的任何�
 > (extract "the country out of the boy")
 "cou"
 ```
-尽管你可以在REPL中执行这个定义，但是定义通常是程序的一部分，你可能希望保存它，并在之后使用。所以在DrRacket中，你通常都会把定义放在文本区上方的定义区（和#lang放在一起）。
+
+尽管你可以在REPL中执行这个 define 形式，但是这些 define 形式通常是程序的一部分，你可能希望保存它们，并在之后使用。所以在DrRacket中，你通常都会把这些 define 放在文本区上方的定义区（和#lang放在一起）。
+
 ```
 #lang racket
 (define (extract str)
     (substring str 4 7))
 ```
-如果(extract "the boy")是你程序的一部分，你可以在定义区中定义。但是如果你仅仅想运行一下extract的例子，那么你可能更偏向于不在定义区运行，而是点击Run按钮，并且在REPL中执行(extract "the boy")。
 
-当你用racket命令行代替DrRacket时，你可以用你习惯的编辑器并把上面的文本保存进去。例如保存进“extract.rkt”，在文件相同目录打开racket，执行下面的操作：
+如果(extract "the boy")是程序的一部分，你也可以在定义区中定义。但是如果你仅仅想运行一下extract的例子，那么你可能更偏向于不在定义区运行，而是点击Run按钮，并且在REPL中执行(extract "the boy")。
+
+当你用racket命令行代替DrRacket时，你可以用你喜欢的编辑器并把上面的文本保存进去。例如保存进“extract.rkt”，并在与该文件相同目录执行racket，执行下面的操作：
+
 ```
 > (enter! "extract.rkt")
 > (extract "the gal out of the city")
@@ -72,69 +84,88 @@ Racket用圆括号包围长表达式-几乎除了简单的常量以外的任何�
 enter!会加载源码并且在模块中切换运行环境，就像在DrRacket中点击Run按钮一样。
 
 ### 1.3创建可执行程序
-如果你的文件（或者DrRacket）包含如下内容
+如果你的文件（或者DrRacket定义区）包含如下内容
+
 ```
 #lang racket
+
 (define (extract str)
     (substring str 4 7))
 
 (extract "the cat out of the bag")
 ```
-那么这就是一个完整的程序，并会在运行的时候打印出“cat”。你可以使用DrRacket或者在racket中用enter!运行这个程序，但是如果这段源码被保存进<源码文件名>，我也可以在命令行中这样运行它
+
+那么它就是一个在运行是能打印“cat”的完整程序。你可以使用DrRacket 或者在 racket 中用 enter! 运行这个程序，但是如果这段源码被保存进<源码文件>，我也可以在命令行中这样运行它
+
 ```
-racket <源码文件名>
+racket <src-filename>
 ```
+
 这里给出一些把代码打包成可执行程序的建议：
-- 在DrRacket中，你可以选择 Racket|Create Executable...选项
-- 命令行中，运行raco exe <源码文件名>。查看[raco exe: Creating Stand-Alone Executables](https://docs.racket-lang.org/raco/exe.html)了解更多信息。
-- Unix或Mac OS中，你可以通过在代码文件最开始的地方插入下面的代码来来生成一个可执行的脚本。
+
+- 在DrRacket中，你可以选择 **Racket|Create Executable**...选项
+- 在命令行中，运行raco exe <*src-filename*>。查看 raco exe: Creating Stand-Alone Executables 了解更多信息。
+- 在Unix 或 Mac OS中，你可以通过在代码文件开始的地方插入下面的代码来来生成可执行的脚本。
+- 
 ```
 #! /usr/bin/env racket
 ```
-然后在命令行中执行chmod +x <源码文件名>改变文件权限。
 
-只要racket在用户的可执行程序的搜索路径中，这个脚本就可以执行。或者在#!后（#!和路径之间有一个空格）使用racket的完整路径，这样的话racket是否在可执行程序的搜索路径中就无所谓了。
+然后在命令行中执行 chmod +x <*src-filename*> 改变文件权限。
 
-### 1.4对于有Lisp/Scheme经验读者的一些注意事项
+只要 racket 在用户的可执行程序的搜索路径中，这个脚本就可以执行。或者在#!后（#!和路径之间有一个空格）使用 racket 的完整路径，这样racket是否在可执行程序的搜索路径中就无所谓了。
+
+### 1.4对于有 Lisp/Scheme 经验的读者的一些注意事项
+
 如果你已经有一些Scheme或者Lisp的经验，你可能会把
+
 ```
 (define (extract str)
     (substring str 4 7))
 ```
+
 写到“extract.rktl”,然后这样运行racket
+
 ```
 > (load "extrack.rktl")
 > (extract "the dog out")
 "dog"
 ```
-没错，这可以运行，因为racket会模拟一个传统意义上的lisp环境。
-但是我们强烈建议你不要在模块外加载([load](https://docs.racket-lang.org/reference/eval.html#%28def._%28%28quote._~23~25kernel%29._load%29%29))或写程序。
 
-在模块外写定义将导致错误、性能下降和一个难以维护和运行程序。这些问题并不是racket特有的。这是传统顶层环境（top-level environment）的
-限制，Scheme和Lisp都曾在特殊的命令行标记、编译指令、构建工具上面纠结过。模块系统被设计用来避免这些问题，所以从长远看来，以#lang开始你会更加喜欢racket。
+没错，这可以运行。因为 racket 会模拟一个传统意义上的lisp环境，但是我们强烈建议你不要在模块外使用 load 或 写程序。
 
-## 2 Racket要素
-本章将简单介绍作为本指南其他章节的背景知识。有Racket经验的读者可以放心的跳至[Built-In Datatypes](https://docs.racket-lang.org/guide/datatypes.html)。
+在模块外进行定义将导致错误、性能下降和一个难以维护和运行程序。这些问题并不是 racket 特有的。这是传统顶层环境（top-level environment）的
+限制，Scheme 和 Lisp 都曾在特殊的命令行标记、编译指令、构建工具上面纠结过。模块系统被设计出来避免这些问题，所以长远地看来，以#lang开始你会更加愉快的使用 racket。
 
-### 2.1简单值
-Racket的值包括数字值，布尔值，字符串值，字节串值。在DrRacket和文档的例子中，值表达式会显示为绿色。
+## 2 Racket 要点
 
-数字以通常的形式被书写，并包含分数和虚数：
+本章将简单介绍作为本指南其他章节的背景知识。有Racket经验的读者可以放心的跳至 Built-In Datatypes。
+
+### 2.1简单值（Simple Value）
+racket的值包括数字，布尔值，字符串，字节串。在DrRacket和文档的例子中，值表达式会显示为绿色。
+
+数字以直观的形式被书写，并且包含分数和虚数：
+
 ```
 1       3.14
 1/2     6.02e+23
 1+2i    9999999999999999999999
 ```
-布尔值用#t代替true，用#f代替false。然而，一般而言都会把非#f的值看成true。
 
-字符串被写在双引号之间。当写一个字符串时，反斜杠充当转义字符。例如，反斜杠后面跟双引号在字符串中充当字面量的双引号。除了非转义的双引号和反斜杠外，任何其他Unicode字符都可以出现在字符串常量中。
+布尔值用 #t 代替 true，用 #f 代替 false。然而，一般而言都会把非 #f 的值看成 true。
+
+字符串被写在双引号之间。对于字符串，反斜杠充当转义字符。例如，反斜杠后跟双引号充当字面量的双引号。除了未转义的双引号和反斜杠外，任何其他 Unicode 字符都可以出现在字符串中。
 
 ```
 "Hello, world!"
 "Benjamin \"Bugsy\" Siegel"
 "λx:(μα.α→α).xx"
 ```
-当一个常量在REPL中被执行时，通常打印和输入语法相同的内容。在某些情况下，打印的形式是输入语法的规范化版本。在文档和DrRacket的REPL中，执行结果用蓝色而不是绿色打印，用以区分这是一个结果而不是一个常量表达式。
+
+当一个常量在REPL中被执行时，通常打印和输入语法相同的内容。在某些情况下，被打印的形式是输入语法的规范化版本。在文档和DrRacket 的 REPL 中，被打印的结果用蓝色而不是绿色打印，用以区分这是一个结果而不是一个常量表达式。
+
+例如：
+
 ```
 > 1.0000
 1.0
@@ -143,29 +174,37 @@ Racket的值包括数字值，布尔值，字符串值，字节串值。在DrRac
 ```
 
 ### 2.2定义和表达式
-程序模块会这样写
+
+模块可以这样写：
+
 ```
 #lang <langname> <topform>*
 ```
 
 \<topform\>是一个<定义>或者<表达式>。REPL会执行 \<topform\>s。
 
-在语法规范中文本会是灰色背景表示（如#lang）文本。空格必须分割在这些文本和非终结符中，比如<标识符>。但是空格不需要出现在‘(’ , ‘)’ , ‘[’ , ‘]’的之前或之后。注释通常以;开始直到本行结束截止，并会被看成空白。
+在语法规范中，灰色背景的文本（如 #lang）表示字面量文本。空格必须分割在这些文本和非终结符中，比如 <*id*>。但是空格不需要出现在‘(’ , ‘)’ , ‘[’ , ‘]’的之前或之后。注释通常以 ; 开始直到本行结束截止，并且会被看成空白。
 
-遵循惯例，* 在语法中指前一个元素的零次或多次重复，+ 指前一个元素的一次或多次重复，{} 将序列作为重复元素分组。
+约定俗称地，* 在语法中指前一个元素的零次或多次重复，+ 指前一个元素的一次或多次重复，{} 将序列中重复元素进行分组。
 
 #### 2.2.1定义
-定义的形式如下
+
+定义的形式如下：
+
 ```
-( define <标识符> <表达式> )
+( define <id> <expr> )
 ```
-把<标识符>绑定到<表达式>，而
+
+把 <*id*> 绑定到 <*expr*>。
+
 ```
-( define (<标识符> <标识符>*) <表达式>+ )
+( define ( <id> <id>*) <expr>+ )
 ```
-把地一个<标识符>绑定到一个函数，该函数以<标识符>*为参数。在这个例子中，<表达式>+是该函数的函数体。当该函数被调用，返回最后一个表达式的结果。
+
+把第一个<*id*>绑定到一个函数（也被成为过程（procedure））并命名，该函数以剩余的 <*id*>+ 为参数。在这个例子中，<*expr*>+ 是该函数的函数体。当该函数被调用，返回最后一个<*expr*>的结果。
 
 例如:
+
 ```
 (define pie 3)              ; defines pie to be 3
 (define (piece str)         ; defines piece as a function
@@ -176,9 +215,11 @@ Racket的值包括数字值，布尔值，字符串值，字节串值。在DrRac
 > (piece "key lime")
 "key"
 ```
-实际上，方法定义和非方法定义一样，并且方法名不一定得用于方法调用。方法只是另一种形式的值，尽管打印出来的形式和数字或者字符串比不太完整。
+
+事实上，函数定义和非函数定义一样，并且函数名不一定用于函数调用。函数只是另一种类型的值，尽管打印出来的形式和数字或者字符串比不太完整。
 
 例如:
+
 ```
 > piece
 #<procedure:piece>
@@ -186,20 +227,52 @@ Racket的值包括数字值，布尔值，字符串值，字节串值。在DrRac
 #<procedure:substring>
 ```
 
+函数定义的函数体可以包含多个表达式。在这种情况下，当函数调用时，只有最后一个表达式的值被返回。其他表达式的执行，仅仅为了它们的副作用，比如打印。
+
+例子
+
+```
+(define (bake flavor)
+    (pringf "preheating oven...\n")
+    (string-append flovr " pie"))
+```
+
+racket程序更倾向于避免副作用，所以函数体中通常只有一个表达式。虽然这很重要，但是我们仍要理解函数体中是允许多表达式的，因为它可以解释下面你的 nobake 函数为什么会失败：
+
+```
+(define (nobake flavor)
+    string-append flavor "hello")
+
+> (bobake "green")
+"jello"
+```
+
+函数nobake中，没有用圆括号将 string-append flavor "jello" 扩起来，所以他们是三个独立的表达式而不是一个函数调用。表达式 string-append 和 flavor 被执行了，但是他们的结果未被使用。函数的结果是最后一个表达式的结果：“jello”。
+
 #### 2.2.2代码缩进
-换行和缩进对于解析Racket程序并不重要，但是大部分Racket程序员使用一套标准的规则使代码更可读。例如，方法体通常在定义的下面一行进行缩进。标识符紧跟在左括号后（中间没有空格），右括号永远不在他们自己的那行。
 
-当我们在DrRacket中输入代码或者在REPL表达式，DrRacket会根据标准格式自动进行缩进。例如，当你在输入(define (greet name)后敲回车，DrRacket会自动在下一行插入两个空格。如果更改了代码的位置，可以在DrRacket选中代码并按Tab键，那样DrRacket会重新缩进（不插入任何换行符）。像Emacs这样的编辑器提供Racket或者Scheme模式来智能缩进。
+换行和缩进对于解析 racket 程序并不重要，但是大部分 racket 程序员会使用一套标准规则使代码更可读。例如，方法体通常在定义的下一行进行缩进。标识符紧跟在没有额外空格的左括号后，右括号永远不在他们自己的那行。
 
-重新缩进不仅使得代码易于阅读，还可以提示你的括号是否按你想要的方式匹配。例如，如果你在函数的最后一个参数后少写了一个右圆括号，自动匹配会在下一行的地一个参数处开始，而不是在define关键字处：
+当我们在 DrRacket 中输入代码或者在REPL表达式时，DrRacket 会根据标准格式自动进行缩进。例如，当你在输入(define (greet name)后敲回车，DrRacket 会自动在下一行插入两个空格。如果更改了代码的位置，可以在 DrRacket 选中代码并按 Tab 键，那样DrRacket 会重新缩进代码（不插入任何换行符）。像Emacs这样的编辑器提供 Racket 或者 Scheme 模式来智能缩进。
+
+重新缩进不仅使得代码易于阅读，还可以提示括号是否按想要的方式匹配。例如，如果你在函数的最后一个参数后少写了一个右圆括号，自动缩进会在第一个参数的下一行开始，而不是在 define 关键字的下面：
+
 ```
 (define (halbake flavor
                  (string-append flavor " creme brulee"")))
 ```
-在这个里例子中，缩进会帮助高亮错误。在其他例子中，当一个左圆括号没有一个与之匹配的右圆括号时，缩进会正常。当圆括号缺失时，racket和DrRacket都会通过源码缩进显示。
+
+对于这个例子，缩进会使错误更加明显。在其他例子中，当一个左圆括号没有一个与之匹配的右圆括号时，缩进会正常。当圆括号缺失时，racket 和 DrRacket 都会通过源码缩进显示。
 
 #### 2.2.3标识符
-racket的标识符语法很自由。除了特殊字符和有数字常量组成的字符序列，几乎任何不含有空白字符的形式都可以是一个标识符。例如，subtring是一个标识符。同样string-append和a+b也是标识符，而不是算术表达式。下面还有几个例子：
+racket 的标识符语法很自由。除了特殊字符
+
+```
+( ) [ ] { } " , ' ` ; # | \
+```
+
+和构成数字常量字符序列，几乎任何不含有空白字符的形式都可以是一个<*id*>（标识符）。例如， subtring 是一个标识符。同样 string-append 和 a+b 也是标识符，而不是算术表达式。下面还有几个例子：
+
 ```
 +
 Hfuhruhurr
@@ -209,13 +282,14 @@ john-jacob-jingleheimer-schmidt
 a-b-c+1-2-3
 ```
 
-#### 2.2.4 函数调用（过程调用）
-我们已经见过很多函数调用了，在更传统一点的术语中，被称作为过程调用。
-函数调用的语法是：
+#### 2.2.4 函数调用（过程应用（Procedure Applications））
+我们已经见过很多函数调用了，在更传统一点的术语中，被称作为过应用。函数调用的语法是：
+
 ```
-( <标识符> <表达式>* )
+( <id> <expr>* )
 ```
-<表达式>s的数量决定应用到<标识符>函数的参数数量。
+
+<expr>s的数量决定应用到名为<id>的函数的参数数量。
 
 racket内置了很多函数标识符，如 substring、string-append。后面我们会见到很多的例子。
 
@@ -257,12 +331,17 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
 ```
 
 #### 2.2.5条件判断(if、and、or和cond)
+
 最简单的一种条件判断是if
+
 ```
-( if <表达式> <表达式> <表达式> )
+( if <expr> <expr> <expr> )
 ```
-第一个<表达式>总是会被执行。如果它执行出一个非#f值，第二个<表达式>将被执行，并把该值作为整个if表达式的值返回，否则第三个表达式执行并返回整个if表达式的值。
+
+第一个<expr>总是会被执行。如果它执行出一个非 #f 值，第二个<expr>将被执行，并把该值作为整个 if 表达式的值返回，否则第三个<expr>执行并返回结果值。
+
 例如：
+
 ```
 (if (> 2 3)
     "bigger"
@@ -280,7 +359,8 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
 "huh?"
 ```
 
-复杂的条件判断可以通过嵌套if表达式来实现。例如，你可以使reply函数处理非字符串的输入：
+复杂的条件判断可以通过嵌套if表达式来实现。例如，可以使reply函数处理非字符串的输入：
+
 ```
 (define (reply s)
     (if (string? s)
@@ -289,7 +369,9 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
             "huh?)
         "huh?"))
 ```
+
 避免出现两次“huh？”，更好的书写方式为
+
 ```
 (define (reply s)
     (if (if (string? s)
@@ -298,14 +380,18 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
         "hi!"
         "huh?"))
 ```
-不过这种嵌套if的方式难以阅读。racket提供可用于使用在任何表达式数量的and和or形式使代码更可读。
+
+不过这种嵌套if的方式难以阅读。racket 提供可用于任意表达式数量的and和or形式使代码更可读：
 
 ```
-(and <表达式>* )
-(or <表达式>* )
+(and <expr>* )
+(or <expr>* )
 ```
-and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否则它会继续执行。or会在碰到一个真值时出现截断。
+
+and 截断：当有表达式返回#f时，and 会停止并返回 #f，否则它会继续执行。or 会在碰到一个真值时出现截断。
+
 例如：
+
 ```
 (define (reply s)
     (if (and (string? s)
@@ -319,7 +405,9 @@ and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否�
 > (reply 17)
 "huh?"
 ```
-另一个常见的if嵌套是提供一系列测试，每个都有一个结果：
+
+另一个常见的 if 嵌套是提供一系列测试，每个都对应一个结果：
+
 ```
 (define (reply-more s)
     (if (equal? "hello" (substring s 0 5))
@@ -330,13 +418,17 @@ and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否�
                 "I don't know"
                 "huh?"))))
 ```
-一系列测试的另一种简便写法是[cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29)形式：
+
+一系列测试的简化版是 cond 形式：
+
 ```
 ( cond {[ <表达式> <表达式>* ]}* )
 ```
-[cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29)形式用方括号包裹一些列子句。每个子句中的第一个<表达式>是一个测试表达式。如果它返回true，那么剩下的 <表达式>* 将会被执行，其中最后一个表达式执行结果将作为整个[cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29)表达式的结果;并且剩下的子句将会被忽略。如果<表达式>返回#f，那么这个表达式剩下的 <表达式>* 将会被忽略，继续执行下一条子句。最后一个子句可以使用 [else](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._else%29%29)(它的作用和#t一样)作为测试<表达式>。
 
-使用[cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29)，上面的 reply-more 函数可以被更简洁的写成下面的形式：
+cond 形式使用方括号包裹一些列子句。每个子句中的第一个<*expr*>是测试表达式。如果返回true，那么剩下的 <expr>s 将被执行，其中最后一个表达式执行结果将作为整个 cond 表达式的结果；并且剩下的子句将会被忽略。如果<表达式>返回#f，那么这个表达式剩下的 <expr>s 将会被忽略，继续执行下一条子句。最后一个子句可以使用 else (它的作用和#t一样)作为测试表达式。
+
+如果使用 cond，上面的 reply-more 函数可以被更简洁的写成下面的形式：
+
 ```
 (define (reply-more s)
     (cond
@@ -354,14 +446,19 @@ and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否�
 > (reply-more "mine is lime green")
 "huh?"
 ```
-在 [cond](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._cond%29%29) 使用方括号只是一种惯例。在racket中方括号和圆括号实际上是可互换的，只要 ( 匹配 ) ， [ 匹配 ] 就行。在一些关键地方使用方括号会使得代码更可读一点。
+
+在 cond 中使用方括号只是一种惯例。在racket中方括号和圆括号实际上是可互换的，只要 ( 匹配 ) ， [ 匹配 ] 就可以。在一些关键地方使用方括号会使得代码更可读一点。
 
 #### 2.2.6又是函数调用
-在之前的程序中，我们介绍的函数调用过于简单了。函数调用实际上可以允许任意表达式，而不只是一个<标识符>：
+
+在我们之前函数调用的程序中，我们介绍得过于简单了。函数调用实际上可以允许任意表达式，而不只是一个<*id*>：
+
 ```
-( <表达式> <表达式>* )
+( <expr> <expr>* )
 ```
-第一个<表达式>通常是一个<标识符>，比如[string-append](https://docs.racket-lang.org/reference/strings.html#%28def._%28%28quote._~23~25kernel%29._string-append%29%29)或者[+](https://docs.racket-lang.org/reference/generic-numbers.html#%28def._%28%28quote._~23~25kernel%29._%2B%29%29)，但是它可以是任何一个可执行的函数。例如，可以是一个条件表达式：
+
+第一个<*expr*>通常是一个<*id*>，比如 string-append 或者 +，但是它可以是任何一个可执行的函数。例如，可以是一个条件表达式：
+
 ```
 (define (bouble v)
     ((if (string? v) string-append +) v v))
@@ -372,7 +469,9 @@ and截断：当有一个<表达式>返回#f时，and会停止并返回#f，否�
 > (double 5)
 10
 ```
-从语法上看，第一个<表达式>甚至可以是一个数字，但是这个会出错，因为数字不是一个函数。
+
+从语法上看，第一个表达式甚至可以是一个数字，但是这个会出错，因为数字不是一个函数。
+
 ```
 > (1 2 3 4)
 application: not a procedure;
@@ -383,17 +482,22 @@ application: not a procedure;
    3
    4
 ```
-当你省略了函数名或者执行表达式使用额外的圆括号时，通常你会碰到一个像这样的“expected a procedure”错误
+
+当你省略了函数名或者执行表达式使用额外的圆括号时，通常你会碰到一个 “expected a procedure” 错误
 
 #### 2.2.7 lambda匿名函数
-如果你为每个数字都起一个名字，racket程序将会特别枯燥。比如一个一个(+ 1 2)，你得这样：
+
+如果为每个数字都起一个名字，racket程序将会特别枯燥。比如一个一个(+ 1 2)，你得这样写：
+
 ```
 > (define a 1)
 > (define b 2)
 > (+ a b)
 3
 ```
-同理，给所有函数命名通常也会非常枯燥。比如，你定义一个函数twice，它接受一个函数和一个参数。如果你已经有一个函数，执行twice会很方便，比如[sqrt](https://docs.racket-lang.org/reference/generic-numbers.html#%28def._%28%28quote._~23~25kernel%29._sqrt%29%29):
+
+同理，给所有函数命名通常也会非常枯燥。比如，定义一个函数twice，它接受一个函数和一个参数。如果你已经有一个函数，执行twice会很方便，比如 sqrt:
+
 ```
 (define (twice f v)
     (f (f v)))
@@ -401,7 +505,9 @@ application: not a procedure;
 > (twice sqrt 16)
 2
 ```
-如果你想调用一个你还未定义的函数，你也可以定义它，然后传给twice：
+
+如果你想调用一个还未定义的函数，你也可以定义它，然后传给twice：
+
 ```
 (define (louder s)
     (string-append s "!"))
@@ -409,16 +515,22 @@ application: not a procedure;
 > (twice louder "hello")
 "hello!!"
 ```
-但是，如果louder只在twice一个地方调用，一个完整的定义会十分难受。在racket中，你可以使用一个[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)表达式直接提供一个函数。lambda表达式使用<标识符>*作为函数的参数，函数体是 <表达式>+：
+
+但是，如果 louder 只在 twice 这一个地方调用，一个完整的定义会使人十分难受。在racket中，你可以使用一个 lambda 表达式直接提供一个函数。lambda表达式使用标识符作为函数的参数，使用表达式作为函数体：
+
 ```
-(lambda ( <标识符>* ) <表达式>+ )
+(lambda ( <id>* ) <expr>+ )
 ```
-[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)自身作为一个函数执行：
+
+lambda 自身作为一个函数执行：
+
 ```
 > (lambda (s) (string-append s "!"))
 #<procedure>
 ```
-使用[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)重写上面的twice可以这样：
+
+使用 lambda 重写上面的 twice 可以这样：
+
 ```
 > (twice (lambda (s) (string-append s "!"))
          "hello")
@@ -427,7 +539,9 @@ application: not a procedure;
          "hello")
 "hello?!?!"
 ```
-另一个使用[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)的方式是作为函数的结果来生成函数：
+
+另一个使用 lambda 的方式是作为函数的结果来生成函数：
+
 ```
 (define (make-add-suffix s2)
     (lambda (s) (string-append s s2)))
@@ -439,7 +553,9 @@ application: not a procedure;
 > (twice (make-add-suffix "...") "hello")
 "hello......"
 ```
-racket是一个基于词法作用域的语言，这表示make-add-suffix返回的函数中的s2，在调用这个函数时，总是引用该参数。换句话说，lambda生成的函数记住了s2：
+
+racket 是一个基于词法作用域的语言，这表示 make-add-suffix 返回的函数中的s2，在调用这个函数时，总是引用该参数。换句话说，lambda生成的函数记住了s2：
+
 ```
 > (define louder (make-add-suffix "!"))
 > (define less-sure (make-add-suffix "?"))
@@ -448,7 +564,9 @@ racket是一个基于词法作用域的语言，这表示make-add-suffix返回�
 >> (twice louder "really")
 "really!!"
 ```
-到目前为止，我们已经在非函数定义中提到过这种定义(define <标识符> <表达式>)。这种描述具有误导性，因为<表达式>可以是一个[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)形式，这种情况下，这种定义相当于是一这个“function”定义的形式。例如，下面两种形式是一样的：
+
+到目前为止，我们已经在非函数定义中提到过这种定义 (define <id> <expr>)。这种描述具有误导性，因为<expr>可以是一个lambda 形式，这种情况下，这种定义相当于是一这个 “function” 定义的形式。例如，下面两种形式是一样的：
+
 ```
 (define (louder s)
     (string-append s "!"))
@@ -460,9 +578,11 @@ racket是一个基于词法作用域的语言，这表示make-add-suffix返回�
 > louder
 #<procedure:louder>
 ```
+
 请注意，第二个louder函数是一个用lambda写的匿名函数，但是，编译器会尽可能推断一个名称使打印和错误报告更有意义和更具可读性。
 
 #### 2.2.8局部绑定 define， let， let*
+
 是时候介绍racket语法的另一个简化了。在函数体中，可以在函数体表达式之前进行定义:
 ```
 (define ( <标识符> <标识符>* ) <定义>* <表达式>+ )
