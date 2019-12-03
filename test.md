@@ -584,12 +584,16 @@ racket 是一个基于词法作用域的语言，这表示 make-add-suffix 返�
 #### 2.2.8局部绑定 define， let， let*
 
 是时候介绍racket语法的另一个简化了。在函数体中，可以在函数体表达式之前进行定义:
+
 ```
-(define ( <标识符> <标识符>* ) <定义>* <表达式>+ )
-(lambda ( <标识符>* ) <定义>* <表达式>+ )
+(define ( <id> <id>* ) <definition>* <expr>+ )
+(lambda ( <id>* ) <definition>* <expr>+ )
 ```
-在函数体开始处的定义，只对该函数体生效。
+
+函数体开始处的定义，只对该函数体生效。
+
 例如：
+
 ```
 (define (converse s)
     (define (starts? s2) ; local to converse
@@ -611,11 +615,15 @@ starts?: undefined;
  cannot reference an identifier before its definition
   in module: top-level
 ```
-[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)形式是另一种创建局部绑定的方法。[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)的另一个优点是它可以用于任何表达式。另外，它还可以一次绑定多个标识符，而不需要为每个标识符单独定义。
+
+另一个创建本地绑定的方式是 let。let的好处是它可以被使用在任何表达式使用的地方。另外，let 可以一次性绑定多个标识符，而不必像 define 一样为每个标识符单独绑定。
+
 ```
-(let ( {[ <标识符> <表达式>]}* ) <表达式>+ )
+( let ([ <id> <expr>]* <expr>+) )
 ```
-每一个绑定子句都用方括号包围着一个<标识符>和一个<表达式>，所有子句后面的<表达式>+是[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)执行体。每个子句中，<标识符>都被并定成<表达式>的执行结果，并可以在[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)的执行体中使用。
+
+每一个绑定子句是一个被放括号包围的 <*id*> 和 <*expr*>，子句后面的那些表达式是 let 体。在 let 体里，每一个子句中的 <*id*> 会被被绑定成<*expr*>的结果。
+
 ```
 > (let ([x (random 4)]
         [o (random 4)])
@@ -625,7 +633,9 @@ starts?: undefined;
         [else "cat's game"]))
  "cat's game"
 ```
-[let](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%29%29)形式的绑定只能在它的执行体中其作用，所以它的子句中的绑定不能相互引用。相反，[let*](https://docs.racket-lang.org/reference/let.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._let%2A%29%29)形式允许后面的子句引用前面子句的绑定：
+
+let形式的绑定只能在它的执行体中其作用，所以它的子句中的绑定不能相互引用。然后，let* 形式允许后面的子句引用前面子句的绑定：
+
 ```
 > (let* ([x (random 4)]
          [o (random 4)]
@@ -636,18 +646,24 @@ starts?: undefined;
      [else "cat's game"]))
  "O wins by 1"
 ```
-### 2.3列表，迭代和递归
-racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置的列表数据结构仍然是该语言的突出特性。
 
-[list](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._list%29%29)函数可以传入任何数量的值，返回一个包含这些值的列表：
+### 2.3列表，迭代和递归
+
+racket是lisp（LISt Processor 列表处理器）语言的一个方言。所以内置的列表数据结构仍然是该语言的突出特性。
+
+函数 list 可以传入任何数量的值，返回一个包含这些值的列表：
+
 ```
 > (list "red" "green" "blue")
 '("red" "green" "blue")
 > (list 1 2 3 4 5)
 '(1 2 3 4 5)
 ```
-正如你所看到的，一个列表的结果在[REPL](https://docs.racket-lang.org/guide/intro.html#%28tech._repl%29)中以'的方式被打印出来，并且用一对圆括号包裹元素列表。这可能是一个让人迷惑的地方，因为圆括号被同时用于表达式（比如(list "red" "green" "blue")）和被打印的结果（比如'("red" "green" "blue")）。除了单引号外，表示结果的圆括号在文档和DrRacket中都用蓝色显示，而用于表达式的圆括号用棕色显示。
+
+正如你看到的，列表的结果在 REPL 中以 ' 的方式被打印出来，并且用一对圆括号包围元素列表。这可能是个让人迷惑的地方，因为圆括号被同时用于表达式，比如 (list "red" "green" "blue") 和被打印的结果 比如'("red" "green" "blue")。除了单引号外，表示结果的圆括号在文档和DrRacket中都用蓝色显示，而用于表达式的圆括号用棕色显示。
+
 许多预定义的函数用来操作列表。下面举一些列子：
+
 ```
 > (length (list "hop" "skip" "jump")) ; count the elements
 3
@@ -662,10 +678,13 @@ racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置�
 > (member "fall" (list "hop" "skip" "jump")) ; check for an element
 #f
 ```
-#### 2.3.1内置的列表循环
-除了像[append](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._append%29%29)这样的简单操作，racket还提供了许多方法用来迭代列表中的元素。这些迭代方法和java、racket或者其他语言中的[for](https://docs.racket-lang.org/reference/for.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._for%29%29)一样。racket迭代的迭代体被封装进函数用来依次应用到每个元素，所以[lambda](https://docs.racket-lang.org/reference/lambda.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._lambda%29%29)和迭代函数结合使用将十分方便。
 
-不同的迭代函数以不同的方式组合迭代结果。[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)函数使用每个元素的结果产生一个新的列表：
+#### 2.3.1内置的列表迭代（Predefined List Loops）
+
+除了像 append 这样的简单操作，racket还提供了许多方法用来迭代列表中的元素。这些迭代方法和java、racket或者其他语言中的for 一样。racket 的迭代体被封装进函数用来依次应用到每个元素，所以 lambda 和迭代函数结合使用将十分方便。
+
+不同的迭代函数以不同的方式组合迭代结果。函数 map 使用每个元素的结果产生一个新的列表：
+
 ```
 > (map sqrt (list 1 4 9 16))
 '(1 2 3 4)
@@ -674,7 +693,9 @@ racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置�
         (list "peanuts" "popcorn" "crackerjack"))
 '("peanuts" "popcorn" "crackerjack")
 ```
-[andmap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)和[ormap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._ormap%29%29)会调用[and](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._and%29%29)或[or](https://docs.racket-lang.org/reference/if.html#%28form._%28%28lib._racket%2Fprivate%2Fletstx-scheme..rkt%29._or%29%29)来组合产生的结果。
+
+andmap 和 ormap 会调用 and 或 or 来组合产生的结果。
+
 ```
 > (andmap string? (list "a" "b" "c"))
 #t
@@ -683,21 +704,27 @@ racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置�
 > (ormap number? (list "a" "b" 6))
 #t
 ```
-[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)、[andmap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)和[ormap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._ormap%29%29)函数不仅可以处理单个列表也可以同时处理多个列表。被处理的表达式必须长度相同，接受的函数从每个列表中取一个元素作为参数：
+
+函数 map、andmap 和 ormap 不仅可以处理单个列表也可以同时处理多个列表。被处理的表达式必须长度相同，接受的函数从每个列表中取一个元素作为参数：
+
 ```
 (map (lambda (s n) (substring s 0 n))
      (list "peanuts" "popcorn" "crackerjack")
      (list 6 3 7))
 '("peanut" "pop" "cracker")
 ```
-[filter](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Flist..rkt%29._filter%29%29)函数会保留迭代体执行后返回真的元素，丢弃返回#f的元素:
+
+函数 filter 会保留迭代体执行后返回真的元素，丢弃返回 #f 的元素:
+
 ```
 > (filter string? (list "a" "b" 6))
 '("a" "b")
 > (filter positive? (list 1 -2 6 7 0))
 '(1 6 7)
 ```
-[foldl](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Flist..rkt%29._foldl%29%29)扩充了一些迭代函数。它使用一个函数处理一个元素并把该元素和当前值组合，所以这个函数需要有一个额外的初始值。此外初始值必须在列表之前就被提供：
+
+函数 foldl 扩充了一些迭代函数。它使用一个函数处理一个元素并把该元素和当前值组合，所以这个函数需要有一个额外的初始值。此外初始值必须在列表之前就被提供：
+
 ```
 > (foldl (lambda (elem v)
             (+ v (* elem elem)))
@@ -705,25 +732,31 @@ racket是lisp（LISt Processor 列表处理器）语言的一个方言。内置�
          '(1 2 3))
 14
 ```
-尽管它的场景很普遍，但是依然没有像其他函数那样被频繁使用。其中一个原因是[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)、[ormap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._ormap%29%29)、[andmap](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)和[filter](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._andmap%29%29)涵盖了列表处理的大部分场景。
 
-racket还提供了一个通用的列表处理形式[for/list](https://docs.racket-lang.org/reference/for.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._for%2Flist%29%29)，它通过遍历一个序列来构建一个列表。列表和相关迭代形式将会在[Iterations and Comprehensions](https://docs.racket-lang.org/guide/for.html)中介绍。
+尽管它的场景很普遍，但是依然没有像其他函数那样被频繁使用。其中一个原因是 map、ormap、andmap、filter涵盖了列表处理的大部分场景。
 
-#### 2.3.2从头开始进行列表迭代
-尽管[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)和其他迭代方法都预先内置了，但是它们都不是原始的方式。你可以通过使用列表原语来生成等效的迭代。
+racket还提供了一个通用的列表处理形式 for/list，它通过遍历一个序列来构建一个列表。列表和相关迭代形式将会在 Iterations and Comprehensions 中介绍。
+
+#### 2.3.2从头开始进行列表迭代（List Iteration from Scratch）
+
+尽管 map 和其他迭代方法都预先内置了，但是它们都不是原始的方式。你也可以通过使用列表原语来生成等效的迭代。
 
 因为racket的列表是一个链表，所以在一个非空的列表中，两个核心的是
-- [first](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._first%29%29):获取列表中的第一个东西；
-- [rest](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._rest%29%29)获取列表中剩余的东西。
+
+- first：获取列表中的第一个元素
+- rest：获取列表中剩余的元素
 
 比如：
+
 ```
 > (first (list 1 2 3))
 1
 > (rest (list 1 2 3))
 '(2 3)
 ```
- 给一个链表添加一个元素，可以适应[cons](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._cons%29%29)(“construct”的缩写)把元素添加到列表的前面。如果是空列表，可以使用常量[empty](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._empty%29%29)。
+
+ 在链表添加一个元素，可以使用 cons （“construct”的缩写）把元素添加到列表的前面。如果是空列表，可以使用常量 empty。
+
 ```
 > empty
 '()
@@ -732,7 +765,9 @@ racket还提供了一个通用的列表处理形式[for/list](https://docs.racke
 > (cons "dead" (cons "head" empty))
 '("dead" "head")
 ```
-为了处理列表，我们需要能区分空列表和非空列表，因为[first](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._first%29%29)和[rest](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._rest%29%29)只能处理非空列表。[empty?](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._empty~3f%29%29)函数用来区分空列表，[cons?](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Flist..rkt%29._cons~3f%29%29)用来区分非空列表。
+
+为了处理列表，我们需要能区分空列表和非空列表，因为 first 和  rest 只能处理非空列表。函数 empty? 用来区分空列表，cons? 用来区分非空列表。
+
 ```
 > (empty? empty)
 #t
@@ -743,9 +778,11 @@ racket还提供了一个通用的列表处理形式[for/list](https://docs.racke
 > (cons? (cons "head" empty))
 #t
 ```
-有了以上这些，你可以写出自己的[length](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28quote._~23~25kernel%29._length%29%29)函数、[map](https://docs.racket-lang.org/reference/pairs.html#%28def._%28%28lib._racket%2Fprivate%2Fmap..rkt%29._map%29%29)函数，以及更多的其他函数。
+
+有了以上这些，你可以写出自己的 length 函数、map函数，以及更多的其他函数。
 
 比如：
+
 ```
 (define (my-length lst)
     (cond
