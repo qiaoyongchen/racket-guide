@@ -805,6 +805,7 @@ racket还提供了一个通用的列表处理形式 for/list，它通过遍历�
 > (my-map string-upcase (list "ready" "set" "go"))
 '("READY" "SET" "GO")
 ```
+
 如果上面的定义对你来说比较难懂，考虑阅读[How to Design Programs](http://www.htdp.org/)。但是如果你仅仅疑惑上面用递归代替迭代的用法，请继续阅读。
 
 #### 2.3.3尾递归
