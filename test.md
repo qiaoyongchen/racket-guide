@@ -1849,9 +1849,11 @@ x: undefined;
 ```
 
 ## 4.表达式和定义（Expressions and Definitions）
+
 在racket要素一章介绍过一些racket的语法形式：定义、函数调用、条件句等等。这一节会展示这些形式的更多细节，和一些新增的基础形式。
 
 ### 4.1表示法（Notation）
+
 本章节（以及文档的剩余部分）使用一个与《racket要素》一章那种基于字符的语法略有不同的表示法。这种语法形式如下所示：
 ```
 (something [id ...+] an-expr ...)
