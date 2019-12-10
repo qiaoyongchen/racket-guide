@@ -1949,7 +1949,7 @@ eval:1:0: define: bad syntax
 
 ### 4.3函数调用
 
-当 *porc-expr* 不是语法转换器（syntax transformer）的的标识符时（比如 if 和 define），这种形式的表达式
+当 *porc-expr* 不是语法转换器（syntax transformer）的标识符时（比如 if 和 define），这种形式的表达式
 
 ```
 （proc-expr arg-expr ...）
@@ -1958,11 +1958,69 @@ eval:1:0: define: bad syntax
 就是一个函数调用（也被成为过程应用）。
 
 #### 4.3.1执行顺序和数量
+函数调用按顺序（从左至右）执行 proc-expr 和 arg-exprs。如果 proc-expr 生成一个接受的参数和 arg-exprs 一样多的函数，那么这个函数就会被调用。否则会抛出一个异常。
 
+例如：
 
+```
+> (cons 1 null)
+'(1)
+> (+ 1 2 3)
+6
+> (cons 1 2 3)
+cons: arity mismatch;
+ the expected number of arguments does not match the given
+number
+  expected: 2
+  given: 3
+  arguments...:
+   1
+   2
+   3
+> (1 2 3)
+application: not a procedure;
+ expected a procedure that can be applied to arguments
+  given: 1
+  arguments...:
+   2
+   3
+```
 
+一些函数，比如 cons，接受固定长度参数。一些函数，比如 + 或者 list，接受任意数量的参数。一些函数接受的参数的个数是一个区间，比如 substring 接受2至2个参数。
 
+#### 4.3.2关键字参数
+一些函数接受关键字参数，而不是接受按位置定义的参数。这种情况下，arg 可以表达为 arg-keyword arg-expr 而不仅仅是 arg-expr： 
 
+```
+(proc-expr arg ...)
+
+    arg = arg-expr
+        | arg-keyword arg-expr
+```
+
+例如：
+
+```
+(go "super.rkt" #:mode 'fast)
+```
+
+用 "super.rkt" 按位置传惨调用函数 go，用 'fast 作为参数传递给 #:mode 关键字。关键字会隐士匹配跟在它后面的表达式。
+
+因为关键字自身不是表达式，所以 
+
+```
+(go "super.rkt" #:mode #:fast)
+```
+
+是一个语法错误。#:mode 关键字必须被跟在一个表达式后面才会生成一个参数值，而 #:fast 不是一个表达式。
+
+关键字参数的顺序取决与 arg-exprs 被执行时的顺序，但是函数接受关键字参数不关心他们在参数列表的位置。上述的调用等价于：
+
+```
+(go #:mode 'fast "super.rkt")
+```
+
+#### 4.3.3 apply 函数
 
 
 
