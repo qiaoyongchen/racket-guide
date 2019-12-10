@@ -1958,6 +1958,7 @@ eval:1:0: define: bad syntax
 就是一个函数调用（也被成为过程应用）。
 
 #### 4.3.1执行顺序和数量
+
 函数调用按顺序（从左至右）执行 proc-expr 和 arg-exprs。如果 proc-expr 生成一个接受的参数和 arg-exprs 一样多的函数，那么这个函数就会被调用。否则会抛出一个异常。
 
 例如：
@@ -1989,6 +1990,7 @@ application: not a procedure;
 一些函数，比如 cons，接受固定长度参数。一些函数，比如 + 或者 list，接受任意数量的参数。一些函数接受的参数的个数是一个区间，比如 substring 接受2至2个参数。
 
 #### 4.3.2关键字参数
+
 一些函数接受关键字参数，而不是接受按位置定义的参数。这种情况下，arg 可以表达为 arg-keyword arg-expr 而不仅仅是 arg-expr： 
 
 ```
@@ -2022,8 +2024,108 @@ application: not a procedure;
 
 #### 4.3.3 apply 函数
 
+函数调用的语法支持任意数量的参数，但是某一特定的函数通常明确接受固定数量的参数。因此，接受参数列表的函数不能将列表中的项直接应用到类似于 '+' 这样的函数。
 
+```
+(define (avg lst) ; doesn't work...
+    (/ (+ lst) (length lst)))
 
+> (avg '(1 2 3))
++: contract violation
+  expected: number?
+  given: '(1 2 3)
+
+(define (avg lst) ; doesn’t always work...
+  (/ (+ (list-ref lst 0) (list-ref lst 1) (list-ref lst 2))
+     (length lst)))
+
+> (avg '(1 2 3))
+2
+> (avg '(1 2))
+list-ref: index too large for list
+  index: 2
+  in: '(1 2)
+```
+
+apply 函数给这种显示提供一种解决方式。它使用一个函数和一个参数列表，将函数应用到参数列表里的值。
+
+```
+(define (avg lst)
+    (/ (apply + lst) (length lst)))
+
+> (avg '(1 2 3))
+2
+> (avg '(1 2))
+3/2
+> (avg '(1 2 3 4))
+5/2
+```
+
+方便起见，函数 apply 还可以接受函数和参数列表之间的其他参数。而外的参数会被 cons 到参数列表：
+
+```
+(define (anti-sum lst)
+    (apply - 0 lst))
+
+> (anti-sum '(1 2 3))
+-6
+```
+
+函数 apply 也可以接受关键字参数，并把这些参数全部传递给被调用函数：
+
+```
+(apply go #:mode 'fast '("super.rkt"))
+(apply go '("super.rkt") #:mode 'fast)
+```
+
+apply列表参数中包含的关键字不算作被调用函数的关键字参数；相反，此列表中的所有参数都被视为位置参数。为了传关键字参数给函数，使用函数 keyword-apply，它接受一个函数和三个列表。前两个列表是对应的：地一个列表包含关键字（按 keyword<?排序），第二个列表包含相应关键字的没一个参数。第三个列表包含按位置传递的参数。
+
+```
+(keyword-apply go
+               '(#:mode)
+               '(fast)
+               '("super.rkt"))
+```
+
+### 4.4匿名函数 （Functions (Procedures): lambda）
+
+lambda 表达式可以创建函数。最简单的情况，lambda 表达式的形式为：
+
+```
+(lambda (arg-id ...)
+    body ...+)
+```
+
+n 个 arg-id 的 lambda 表达式表示接受 n 个参数：
+
+```
+> ((lambda (x) x)
+   1)
+1
+> (lambda (x y) (+ x y)
+   1 2)
+3
+> ((lambda (x y) (+ x y))
+   1)
+#<procedure>: arity mismatch;
+ the expected number of arguments does not match the given
+number
+  expected: 2
+  given: 1
+  arguments...:
+   1
+```
+
+### 4.4.1声明rest参数
+
+lambda 表达式也可以是这种形式：
+
+```
+(lambda rest-id
+    body ...+)
+```
+
+lambda 可以有一个单一的 *rest-id*,而不必用圆括号包围。
 
 
 
