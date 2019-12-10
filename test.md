@@ -2116,7 +2116,7 @@ number
    1
 ```
 
-### 4.4.1声明rest参数
+#### 4.4.1声明剩余参数（Declaring a Rest Argument）
 
 lambda 表达式也可以是这种形式：
 
@@ -2126,6 +2126,106 @@ lambda 表达式也可以是这种形式：
 ```
 
 lambda 可以有一个单一的 *rest-id*,而不必用圆括号包围。
+生成的函数接受任何数量的参数，并且这些参数被放进一个绑定为 *rest-id* 的列表。
+
+例如：
+
+```
+> ((lambda x x)
+    1 2 3)
+'(1 2 3)
+> ((lambda x x))
+'()
+> ((lambda x (car x))
+    1 2 3)
+1
+```
+
+带有 *rest-id* 的函数经常使用 apply 函数调用另一个接受任意数量参数的函数。
+
+例如：
+
+```
+(define max-mag
+    (lambda num
+        (apply max (map magnitude nums))))
+
+> (max 1 -2 0)
+1
+> (max-mag 1 -2 0)
+2
+```
+
+lambda形式还支持结合 *rest-id* 的必需参数：
+
+```
+(lambda (arg-id ...+ . rest-id)
+    body ...+)
+```
+
+这种形式的结果是一个函数，它至少需要和 *arg-ids* 一样多的参数，同时也可以接受任何数量的额外参数。
+
+例如：
+
+```
+(define max-mag
+    (lambda (num . nums)
+        (apply max (map magnitude (cons num nums)))))
+
+> (max-mag 1 -2 0)
+2
+> (max-mag)
+max-mag: arity mismatch;
+ the expected number of arguments does not match the given
+number
+  expected: at least 1
+  given: 0
+```
+
+*rest-id* 有时也被成为剩余参数，因为它接受函数参数的剩余部分。
+
+#### 4.4.2声明可选参数（Declaring Optional Arguments）
+
+不仅仅是标识符，lambda 形式的参数（除了剩余参数）可以用标识符和默认值指定：
+
+```
+(lambda gen-formals
+    body ...+)
+
+    gen-formals = (arg ...)
+                | rest-id
+                | (arg ...+ . rest-id)
+
+            arg = arg-id
+                | [arg-id default-expr]
+```
+
+\[arg-id default-expr\]形式的参数是可选的。当这个参数在程序中没有提供， *default-expr* 产生一个默认值。*default-expr* 可以指向前面的 *arg-id*,并且每一个 *arg-id* 也必须有一个默认值。
+
+例如：
+
+```
+(define greet
+    (lambda (given [surname "Smith"])
+        (string-append "Hello, " given " " surname)))
+
+> (greet "John")
+"Hello, John Smith"
+> (greet "Jhon" "Doe")
+"Hello, Jhon Doe"
+
+(define greet
+    (lambda (given [surname (if (equal? given "Jhon")
+                                 "Doe"
+                                 "Smith")])
+        (string-append "Hello, " given " " surname)))
+> (greet "Jhon")
+"Hello, Jhon Doe"
+> (greet "Adam")
+"Hello, Adam Smith"
+```
+
+#### 4.4.3声明关键字参数
 
 
 
