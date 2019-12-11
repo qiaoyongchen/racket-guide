@@ -2397,8 +2397,22 @@ define 形式通常支持函数定义的简写：
 
 #### 4.5.2柯里化函数简写
 
+考虑下面的 make-add-suffix 函数，它接受一个字符串并返回另一个接受字符串的函数：
 
+```
+(define make-add-suffix
+    (lambda (s2)
+        (lambda (s) (string-append s s2))))
+```
 
+尽管不是很普遍，make-add-suffix 的结果可以直接被调用，就像这样：
+
+```
+> ((make-add-suffix "!") "Hello")
+"Hello!"
+```
+
+在某种意义上，make-add-suffix 是一个接受两个参数的函数，但是一次只能接收一个参数。这种接收几个参数并且返回以消耗更多的参数的函数，有时被称为柯里化函数。
 
 
 
