@@ -2211,21 +2211,202 @@ number
 
 > (greet "John")
 "Hello, John Smith"
-> (greet "Jhon" "Doe")
-"Hello, Jhon Doe"
+> (greet "John" "Doe")
+"Hello, John Doe"
 
 (define greet
-    (lambda (given [surname (if (equal? given "Jhon")
+    (lambda (given [surname (if (equal? given "John")
                                  "Doe"
                                  "Smith")])
         (string-append "Hello, " given " " surname)))
-> (greet "Jhon")
-"Hello, Jhon Doe"
+> (greet "John")
+"Hello, Jojn Doe"
 > (greet "Adam")
 "Hello, Adam Smith"
 ```
 
 #### 4.4.3声明关键字参数
+
+lambda 形式可以定义按关键字（而不是按位置）传入的参数。关键字参数可以和按位置参数混合使用，默认值表达式可以应用到任意类型的参数。
+
+```
+(lambda gen-formals
+  body ...+)
+ 
+  gen-formals = (arg ...)
+              | rest-id
+              | (arg ...+ . rest-id)
+
+          arg = arg-id
+              | [arg-id default-expr]
+              | arg-keyword arg-id
+              | arg-keyword [arg-id default-expr]
+```
+
+形如 arg-keyword arg-id 的参数被程序通过 arg-word 使用。keyword-identigfer 在参数列中的位置对于程序匹配参数不重要，因为它会被按关键字匹配成为参数，而不是按位置。
+
+```
+(define greet
+    (lambda (given #:;last surname)
+        (string-append "Hello, " given " " surname)))
+
+> (greet "John" #:last "Smith")
+"Hello, John Smith"
+> (greet #:last "Doe" "John")
+"Hello, John Doe"
+```
+
+arg-keyword [arg-id default-expr] 指定一个基于关键字并带有默认值的参数。
+
+例如:
+
+```
+(define greet
+    (lambda (#:hi [hi "Hello"] given #:last [surname "smith"])
+        (string-append hi ", " given " " surname)))
+
+> (greet "John")
+"Hello, John Smith"
+> (greet "karl" #:last "Marx")
+"Hello, Karl Marx"
+> (greet "John" #:hi "Howdy")
+"Howdy, John Smith"
+> (greet "karl" #:last "marx" #:hi "Guten Tag")
+"Guten tag, Karl Marx"
+```
+
+lambda 形式不支持直接创建可接受“剩余”关键字参数的函数。为了构造能接受所有关键字参数的函数，可以使用 make-keyword-procedure。被提供了 make-keyword-procedure 的函数通过两个参数列表接受所有关键字参数，然后所有应用中按位置的参数作为作为剩余参数。
+
+例如：
+
+```
+(define (trace-wrap f)
+  (make-keyword-procedure
+   (lambda (kws kw-args . rest)
+     (printf "Called with ~s ~s ~s\n" kws kw-args rest)
+     (keyword-apply f kws kw-args rest))))
+ 
+> ((trace-wrap greet) "John" #:hi "Howdy")
+Called with (#:hi) ("Howdy") ("John")
+
+"Howdy, John Smith"
+```
+
+#### 4.4.4数量敏感函数:case-lambda （Arity-Sensitive Functions: case-lambda）
+
+case-lambda 形式根据被提供参数的数量的不同，产生函数的行为完全不同。case-lambda 表达式具有如下形式：
+
+```
+(case-lambda
+  [formals body ...+]
+  ...)
+ 
+formals = (arg-id ...)
+        | rest-id
+        | (arg-id ...+ . rest-id)
+```
+
+每一个[formals body ...+]都类似(lambda formals body ...+)。使用一个 case-lambda 生成的函数类似于应用 lambda 到第一个参数数量匹配的情况。
+
+例如：
+
+```
+(define greet
+    (case-lambda
+        [(name) (string-append "Hello, " name)]
+        [(given surname) (string-append "Hello, " given " " surname)]))
+
+> (greet "John")
+"Hello, John"
+> (greet "John" "Smith")
+"Hello, John Smith"
+> (greet)
+greet: arity mismatch;
+ the expected number of arguments does not match the given
+number
+  given: 0
+```
+
+case-lambda 函数不能直接支持可选参数和关键字参数。
+
+### 4.5定义：define
+
+定义的基本形式如下
+
+```
+(define id expr)
+```
+
+在这种情况下 *id* 被绑定到 *expr* 的结果。
+
+例如：
+
+```
+(define salutation (list-ref '("Hi" "Hello") (random 2)))
+> salutation
+"Hi"
+```
+
+#### 4.5.1函数简写
+
+define 形式通常支持函数定义的简写：
+
+```
+(define (id arg ...) body ...+)
+```
+
+是下面形式的简写
+
+```
+(define id (lambda (arg ...) body ...+))
+```
+
+例如：
+
+```
+(define (greet name)
+    (string-append salutation ", " name))
+
+> (greet "John")
+"Hi, John"
+
+(define (greet first [surname "Smith"] #:hi [hi salutation])
+    (string-append hi ", " first " " surname))
+
+> (greet "John")
+"Hi, John Smith"
+> (greet "John" "Doe")
+"Hi, john Doe"
+```
+
+函数间歇通过 define 也支持 剩余参数（rest argument）。
+
+```
+(deifne id (lambda (arg ... . rest-id) body ...+))
+```
+
+例如：
+
+```
+(define (avg . l)
+    (/ (apply + l) (length l)))
+
+> (avg 1 2 3)
+2
+```
+
+#### 4.5.2柯里化函数简写
+
+
+
+
+
+
+
+
+
+
+
 
 
 
