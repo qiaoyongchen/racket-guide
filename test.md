@@ -2511,6 +2511,126 @@ define 形式（不是函数简写）等价于 define-values 形式的单值情�
 
 #### 4.5.4内部定义（Internal Definitions）
 
+当句法形式指定了 *body*，那么对应的形式可以是定义或者是表达式。*body* 的定义就是内部定义。
+
+*body* 里的表达式和内部定义可以混合，只要最后一个是表达式就可以。
+
+例如，lambda 语法是这样
+
+```
+(lambda gen-formals
+    body ...+)
+```
+
+所以，如下显示的是一个合法的句法实例：
+
+```
+(lambda (f)                     ; no definitions
+    (printf "running\n")
+    (f 0))
+
+(lambda (f)                     ; one definitions
+    (define (log-it what)
+        (printf "~a\n" what))
+    (log-it "running")
+    (f 0)
+    (log-it "done"))
+
+(lambda (f n)                  ; two definitions
+    (define (call n)
+        (if (zero? n)
+            (log-it "done")
+            (begin
+                (log-it "running")
+                (fn)
+                (call (- n 1)))))
+    (define (log-it what)
+        (printf "~a\n" what))
+    (call n))
+```
+
+*body* 序列中的内部定义是相互递归的。这表示，任何定义可以引用任何其他的定义，只要引用在定义前没有被实际求值。如果定义太早被引用，会导致一个错误。
+
+例如：
+
+```
+(define (weird)
+    (define x x)
+    x)
+
+> (weird)
+x: undefined;
+ cannot use before initialization
+```
+
+使用 define 的内部定义序列，可以很容易转成等价的 letrec 形式。然而，其他定义形式也可以出现在 *body* 中，包括 define-values，struct或者 define-syntax。
+
+### 4.6本地绑定
+
+尽管内部定义可以被用作本地绑定（local binding），然而racket 还提供给程序员比绑定更多控制的三种形式：let，let*，和 letrec。
+
+#### 4.6.1 平行绑定：let（Parallel Binding: let）
+
+let 形式使用 let body 绑定标识符集，其中每一个都是表达式的结果。
+
+```
+(let ([id expr] ...) body ...+)
+```
+
+这些 *id* 是被平行绑定的。也就是说，对于任何 *id*，右侧的 *expr* 都没有绑定 *id*，但是在 *body* 中都是可用的。这些 *id* 之间都是不同的。
+
+例如：
+
+```
+> (let ([me "Bob"])
+    me)
+"Bob"
+> (let ([me "Bob"]
+        [myself "Robert"]
+        [I "bobby"])
+    (list me myself I))
+'("Bob", "Robert" "Bobby")
+> (let ([me "Bob"]
+        [me "Robert"])
+    me)
+eval:3:0: let: duplicate identifier
+  at: me
+  in: (let ((me "Bob") (me "Robert")) me)
+```
+
+事实上，对于必须引用旧值的包装器，*id* 的 *expr* 不意识到自己的绑定通常很有用。
+
+```
+> (let ([+ (lambda (x y)
+                (if (string? x)
+                    (string-append x y)
+                    (+ x y)))]) ; use original +
+    (list (+ 1 2)
+          (+ "see" "saw")))
+'(3 "seesaw")
+```
+
+有时，let 绑定需要方便的交换或重新排列：
+
+```
+> (let ([me "Tarzan"]
+        [you "Jane"])
+    (let ([me you]
+         [you me])
+        (list me you)))
+'("Jane" "Tarzan")
+```
+
+将 let 绑定描述为“并行”并不意味着要进行并发计算。表达式是按顺序求值的，即使绑定延迟到所有表达式求值为止。
+
+#### 4.6.2顺序绑定：let*（Sequential Binding: let*）
+
+let* 的语法和 let一样：
+
+```
+(let* ([id expr] ...) body ...+)
+```
+
 
 
 
