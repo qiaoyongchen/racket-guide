@@ -2412,12 +2412,104 @@ define 形式通常支持函数定义的简写：
 "Hello!"
 ```
 
-在某种意义上，make-add-suffix 是一个接受两个参数的函数，但是一次只能接收一个参数。这种接收几个参数并且返回以消耗更多的参数的函数，有时被称为柯里化函数。
+在某种意义上，make-add-suffix 是一个接受两个参数的函数，但是一次只能接收一个参数。这种接收几个参数并且返回消耗更多的参数的函数，有时被称为柯里化函数。
 
+使用 define 函数简写，make-add-suffix 可以被等价写成：
 
+```
+(define (make-add-suffix s2)
+    (lambda (s) (string-append s s2)))
+```
 
+函数简写反映了 (make-add-suffix "!") 函数调用的形态。define 形式还支持定义嵌套函数调用的柯里化函数的简写：
 
+```
+(define ((make-add-suffix s2) s)
+    (string-append s s2))
 
+> ((make-add-suffix "!") "Hello")
+"Hello!"
+
+(define louder (make-add-suffix "!"))
+(define less-sure (make-add-suffix "?"))
+
+> (less-sure "really")
+"really?"
+> (louder "really")
+"really!"
+```
+
+define 函数简写的完整语法如下：
+
+```
+(define (heads args) body ...+)
+
+    head = id
+         | (head args)
+    
+    args = arg ...
+         | arg ... rest-id
+```
+
+这个简写的扩展对于每个 *head* 定义都有一层 lambda 嵌套（从最里层 lambda 到最外层 lambda）。
+
+#### 4.5.3多值和 define-values （Multiple Values and define-values）
+
+racket 表达式通常生成单一值，但是有些表达式可以生成多个结果。比如 quotient 和 remainder 各自生成一个值，但是quotient/remainder 一次生成同样的两个值：
+
+```
+> (quotient 13 3)
+4
+> (remainder 13 3)
+1
+> (quotient/remainder 13 3)
+4
+1
+```
+
+如上所示， REPL 会在每一行打印各自的结果。
+
+多返回值函数可以通过函数 values 来实现，它会接受任意数量的值，并作为结果返回它们。
+
+```
+> (values 1 2 3)
+1
+2
+3
+
+(define (split-name name)
+    (let ([parts (reg-split " " name)])
+        (if (= (length parts) 2)
+            (values (list-ref parts 0) (list-ref parts 1))
+            (error "not a <first> <last> name"))))
+
+> (split-name "Adam Smith")
+"Adam"
+"Smith"
+```
+
+define-values 形式通过一个单一表达式，一次性绑定多个标识符到多个结果。
+
+```
+(define-values (id ...) expr)
+```
+
+*expr* 生成参数的数量必须和 *id* 的数量一致。
+
+例如：
+
+```
+(define-values (given surname) (split-name "Adam Smith"))
+
+> given
+"Adam"
+> surname
+"Smith"
+```
+
+define 形式（不是函数简写）等价于 define-values 形式的单值情况。
+
+#### 4.5.4内部定义（Internal Definitions）
 
 
 
