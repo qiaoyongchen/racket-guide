@@ -2631,7 +2631,40 @@ let* 的语法和 let一样：
 (let* ([id expr] ...) body ...+)
 ```
 
+不同点在于每一个 *id* 都可以被后面的 *expr* 使用，当然也包括 *body*。另外，这些 *id* 可以不是唯一的，最新的绑定是可见的。
 
+例如：
+
+```
+> (let* ([x (list "Burroughs")]
+         [y (cons "Rice" x)]
+         [z (cons "Edgar" y)])
+    (list x y z))
+'(("Burroughs"), ("Rice" "Burroughs") ("Edgar" "Rice" "Burroughs"))
+> (let* ([name (list "Burroughs")]
+         [name (cons "Rice" name)]
+         [name (cons "Edgar" name)])
+    name)
+'("Edgar" "Rice" "Burroughs")
+```
+
+换句话说，let* 形式等价于嵌套的 let 形式，每一个都是单值绑定：
+
+```
+> (let ([name (list "Burroughs")])
+    (let ([name (cons "Rice" name)])
+        (let ([name (cons "Edgar" name)])
+            name)))
+'("Edgar" "Rice" "Burroughs")
+```
+
+#### 4.6.3递归绑定：letrec（Recursive Binding: letrec）
+
+letrec 语法同样和 let 一样：
+
+```
+(letrec ([id expr] ...) body ...+)
+```
 
 
 
