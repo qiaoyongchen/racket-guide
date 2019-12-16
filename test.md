@@ -2666,6 +2666,240 @@ letrec 语法同样和 let 一样：
 (letrec ([id expr] ...) body ...+)
 ```
 
+let 使绑定只能在 body 中使用，let* 使绑定可以在其后绑定的任何 expr 中可用，letrec 是绑定在其它所有 expr 中都可用，甚至它之前的expr。换句话说，letrec 绑定是递归的。
 
+letrec形式的表达式通常是递归和相互递归函数的lambda形式：
 
+```
+> (letrec ([swing
+            (lambda (t)
+                (if (eq? (car t) 'tarzan)
+                    (cons 'vine
+                          (cons 'tarzan (cddr t)))
+                    (cons (car t)
+                          (swing (cdr t)))))])
+    (swing '(vine tarzan vine vine)))
+'(vine vine tarzan vine)
 
+> (letrec ([tarzan-near-top-of-tree?
+            (lambda (name path depth)
+              (or (equal? name "tarzan")
+                  (and (directory-exists? path)
+                       (tarzan-in-directory? path depth))))]
+           [tarzan-in-directory?
+            (lambda (dir depth)
+              (cond
+                [(zero? depth) #f]
+                [else
+                 (ormap
+                  (λ (elem)
+                    (tarzan-near-top-of-tree? (path-element->string elem)
+                                              (build-path dir elem)
+                                              (- depth 1)))
+                  (directory-list dir))]))])
+    (tarzan-near-top-of-tree? "tmp"
+                              (find-system-path 'temp-dir)
+                              4))
+directory-list: could not open directory
+  path: /var/tmp/systemd-private-2664ffead56f4c109ad4eb0808e
+8919f-chronyd.service-5qoHCC
+  system error: Permission denied; errno=13
+```
+
+其实 letrec 形式的 expr 通常是 lambda 表达式，他们可以是任何表达式。这些表达式按顺序执行，虽然他们的值被获得，并立即关联到对应的 id。在内部定义中，当一个 id 在其值未生成时就被引用，就会抛出一个错误。
+
+```
+> (letrec ([quicksand quicksand])
+    quicksand)
+quicksand: undefined;
+ cannot use before initialization
+```
+
+#### 4.6.4let命名（Named let）
+
+let 命名是迭代和递归的。它使用的同本地绑定一样的语法关键字 let，但是 let 后面跟一个标识符（而不是直接的左圆括号），用来触发不同的解析。
+
+```
+(let proc-id ([arg-id init-expr] ...)
+    body ...+)
+```
+
+这个 let 命名形式等价于
+
+```
+(letrec ([proc-id (lambda (arg-id ...)
+                    body ...+)])
+    (proc-id init-expr ...))
+```
+
+这表示，let 命名绑定了一个只在函数体中可见的函数标识符，
+并且它通过一些初始表达式的值隐式的调用函数。
+
+```
+(define (duplicate pos lst)
+    (let dup ([i 0]
+              [lst lst])
+        (cond
+            [(= i pos) (cons (car lst) lst)]
+            [else (cons (car lst) (dup (+ i 1) (cdr lst)))])))
+> (duplicate 1 (list "apple" "cheese burger!" "banana"))
+'("apple" "cheese burger!" "cheese burger!" "banana")
+```
+
+#### 4.6.5多值绑定（Multiple Values: let-values, let*-values, letrec-values）
+
+同样的，define-values 用来在定义中绑定多值，let-values，let*-values 和 letrec-values 在局部绑定多个结果。
+
+```
+(let-values ([(id ...) expr] ...)
+    body ...+)
+```
+
+```
+(let*-value ([(id ...) expr] ...)
+    body ...+)
+```
+
+```
+(letrec-values ([(id ...) expr] ...)
+    body ...+)
+```
+
+每一个 expr 生成的多值必须对应 id。绑定规则相同：let-values 的 id 只能在 let 体中被绑定， let*-values 只能在其后的子句中被绑定，letrec-values 可以在所有的 expr 中被绑定。
+
+例如：
+
+```
+> (let-values ([q r (quotient/remainder 14 3)])
+    (list q r))
+'(4 2)
+```
+
+### 4.7条件句
+
+大多数用于分支的函数，比如 < 和 string?，产生 #t 或 #f。然而racket 的分支形式把所有非 #f 的值作为 #t 对待。可以这样说真值表示任何非 #f 的值。
+
+“真值”的这个约定与协议很好地结合在一起，其中#f可以用作失败或指示未提供可选值。（注意不要过度使用这个技巧，异常通常是报告失败的更好机制。）
+
+比如，函数 member 具有双重职责。它可以用来查找以特殊的项开始的列表的尾部，或者可以用来简单检查这个项在列表中是否被提供。
+
+```
+> (member "Groucho" '("harpo" "Zeppo"))
+#f
+> (member "Groucho" '("Harpo" "Groucho" "Zeppo") )
+'("Groucho" "Zeppo")
+> (if (member "Groucho" '("Harpo" "Zeppo"))
+    'yep
+    'nope)
+'nope
+> (if (member "Groucho" '("Harpo" "Groucho" "Zeppo"))
+    'yep
+    'nope)
+'yep
+```
+
+#### 4.7.1 简单分支：if
+
+if 形式
+
+```
+(if test-expr then-expr else-expr)
+```
+
+text-expr 总是会被执行。如果它生成一个非 #f 值，那么 then-expr 执行，否则 else-expr 执行。
+
+if 形式必须同时拥有 then-expr 和 else-expr。后者（else-expr）不是可选的。基于 test-expr 执行（或跳过）副作用，请使用 when 或 unless，我们将在后面的序列中描述。
+
+#### 4.7.2合并测试：and 和 or
+
+racket 的 and 和 or 是语法形式，而不是函数。和函数不同，and 和 or 形式当在前面的表达式决定了结果时，会跳过执行后面的表达式。
+
+```
+(and expr ...)
+```
+
+对于 and 形式，如果任何一个 expr 产生 #f，它就会返回 #f。否则，它返回最后一个 exp 的值。作为一个特殊的例子，(and) 返回 #t。
+
+```
+(or expr ...)
+```
+
+对于 or 形式，如果它的表达式都返回 #f，它就返回 #f。否则它从它的表达式中返回地一个非 #f 值。作为一个特殊的例子，(or) 返回 #f。
+
+例如：
+
+```
+> (define (got-milk? lst)
+    (and (not (null? lst))
+         (or (eq? 'milk (car lst))
+             (got-milk? (cdr lst))))) ; recurs only if needed
+> (got-milk? '(apple banana))
+#f
+```
+
+如果执行到 and 或 or 形式的最后一个表达式，这个表达式的值直接决定了 and 或 or 的值。因此，位于尾部的最后一个表达式，表明了上述的函数 got-milk? 在常数空间内运行。
+
+#### 4.7.3链式测试：cond
+cond 形式链起一系列测试并选择一个结果表达式。cond 的语法如下：
+
+```
+(cond [test-expr body ...+]
+      ...)
+```
+
+每一个 test-expr 按顺序被执行。如果它生成 #f，对应的 body 就被忽略，执行继续转到下个 test-expr。一旦某个 test-expr 生成真值，那么他的 body 将被执行并生成 cond 形式的结果，并且其余的 test-expr 不会再被执行。
+
+cond 中最后的 test-expr 可以用 else 代替。在执行的条目中，else 作为 #t 的同义词，它表示最后的子句的意思是捕获所有剩下的情况。如果没有使用 else，那么可能会没有 test-expr 生成 真值。在这种情况下，cond 表达式的结果是 #\<void\>。
+
+例如：
+```
+> (cond
+    [(= 2 3) (error "wrong!")]
+    [(= 2 2) 'ok])
+'ok
+> (cond
+    [(= 2 3) (error "wrong!")])
+> (cond 
+    [(= 2 3) (error "wrong!")]
+    [else 'ok])
+'ok
+
+(define (got-milk? lst)
+    (cond
+        [(null? lst) #f]
+        [(eq? 'milk (car lst)) #t]
+        [else (got-milk? (cdr lst))]))
+
+> (got-milk? '(apple banana))
+#f
+> (got-milk? '(apple milk banana))
+#t
+```
+
+cond 的完整语法还包括两个两条子句：
+
+```
+(cond cond-clause ...)
+ 
+cond-clause = [test-expr then-body ...+]
+            | [else then-body ...+]
+            | [test-expr => proc-expr]
+            | [test-expr]
+```
+
+变体 => 捕获 test-expr 的真值结果，并把结果传递给 proc-expr（必须是接受一个参数的函数）。
+
+例如：
+
+```
+> (define (after-groucho lst)
+    (cond
+      [(member "Groucho" lst) => cdr]
+      [else (error "not there")]))
+> (after-groucho '("Harpo" "Groucho" "Zeppo"))
+'("Zeppo")
+> (after-groucho '("Harpo" "Zeppo"))
+not there
+```
+
+只包含 test-expr 的子句很少被使用。它捕获 test-expr 的真值结果，并把该结果作为整个 cond 表达式的结果返回。
