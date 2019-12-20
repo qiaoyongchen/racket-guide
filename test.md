@@ -2903,3 +2903,196 @@ not there
 ```
 
 只包含 test-expr 的子句很少被使用。它捕获 test-expr 的真值结果，并把该结果作为整个 cond 表达式的结果返回。
+
+### 4.8顺序执行
+
+racket 程序员喜欢写尽可能少副作用的代码，因为纯函数式代码更容易被测试和被组织进更大的程序。然而，和外部环境交互需要顺序执行，比如写入到显示（writing to a play）、打开图形化窗口或者操纵文件到磁盘。
+
+#### 4.8.1效果在前：begin(Effects Before: begin)
+
+begin 表达式串联一组表达式：
+
+```
+(begin expr ...+)
+```
+
+这些 expr 按顺序被执行，并且除了最后一个表达式的其他执行结果都会被忽略。最后一个表达式的结果是 begin 形式的结果，它相对 begin 形式处于末尾处。
+
+例如：
+
+```
+(deifne (print-triangle height)
+    (if (zero? height)
+        (void)
+        (begin
+            (display (make-string height #\*))
+            (newline)
+            (print-triangle (sub1 height)))))
+> (print-triangle 4)
+****
+***
+**
+*
+```
+
+很多形式，比如 lambda 或者 cond 支持不借助 begin 就可以实现表达式序列。这些形式有时被认为是一个隐式的 begin。
+
+例如：
+
+```
+(define (print-triangle height)
+    (cond
+        [(positive? height)
+         (display (make-string height #\*)
+         (newline)
+         (print-triangle) (sub1 height))]))
+
+> (print-triangle 4)
+****
+***
+**
+*
+```
+
+begin 形式在 REPL中、在模块级和在其执行体后只有局部定义时有特殊。在这些地方，begin 的内容不是形成表达式而是拼接到上下文环境中。
+
+例如：
+
+```
+> (let ([curly 0])
+    (begin
+        (define moe (+ 1 curly))
+        (define larry (+ 1 moe)))
+    (list larry curly moe))
+'(2 0 1)
+```
+
+这种拼接行为主要用于宏，我们稍后会讨论。
+
+#### 4.8.2 效果在后:begin0 （Effects After: begin0）
+
+begin0 表达式语法和 begin 表达式语法一样：
+
+```
+(begin0 expr ...+)
+```
+
+不同点在于，begin0 返回地一个表达式的结果，而不是返回最后一个表达式的结果。begin0 形式适用于在计算后产生副作用（特别是在计算产生未知数量结果的情况下）。
+
+例如：
+
+```
+(define (log-times thunk)
+    (printf "Start: ~s\n" (current-inexact-milliseconds))
+    (begin0
+        (thunk)
+        (printf "End..: ~s\n" (current-inexact-milliseconds))))
+
+> (log-times (lambda () (values 1 2)))
+Start: 1574107139348.75
+End..: 1574107139348.887
+1
+2
+```
+
+#### 4.8.3 效果选择（Effects If...: when and unless）
+
+when 形式结合了 if 风格的条件和 then 子句的序列，并且没有 else 子句。
+
+```
+(when test-expr then-body ...+)
+```
+
+如果 test-expr 生成一个真值，那么所有 then-body 将被执行。最后一个 then-body 的结果是 when 形式的结果。否则，then-body 不会被执行，结果为 #\<viod\>。
+
+unless 形式类似：
+
+```
+(unless test-expr then-body ...+)
+```
+
+不同点在于 text-expr 的结果是反的：只有在 test-expr 的结果是 #f 的时候 then-body 才会被执行。
+
+例如：
+
+```
+(define (enumerate lst)
+  (if (null? (cdr lst))
+      (printf "~a.\n" (car lst))
+      (begin
+        (printf "~a, " (car lst))
+        (when (null? (cdr (cdr lst)))
+          (printf "and "))
+        (enumerate (cdr lst)))))
+ 
+> (enumerate '("Larry" "Curly" "Moe"))
+Larry, Curly, and Moe.
+
+(define (print-triangle height)
+  (unless (zero? height)
+    (display (make-string height #\*))
+    (newline)
+    (print-triangle (sub1 height))))
+
+> (print-triangle 4)
+****
+***
+**
+*
+```
+
+### 4.9 赋值：set!（Assignment: set!）
+
+给变量赋值使用 set!：
+
+```
+(set! id expr)
+```
+
+set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)的值为 expr 的结果值。set!表达式的结果为 #\<void\>。
+
+例如：
+
+```
+(define greeted null)
+
+(define (greet name)
+    (set! greeted (cons name greeted))
+    (string-append "Hello, " name))
+> (greet "Athos")
+"Hello, Athos"
+> (greet "Porthos")
+"Hello, Porthos"
+> (greet "Aramis")
+"Hello, Aramis"
+> greeted
+'("Aramis" "Porthos" "Athos")
+
+(define (make-running-total)
+    (let ([n 0])
+        (lambda ()
+            (set! n (+ n 1))
+        n)))
+(define win (make-running-total))
+(define lose (make-running-total))
+
+> (win)
+1
+> (win)
+2
+> (lose)
+1
+> (win)
+3
+```
+
+#### 4.9.1 使用赋值的参考指南 （Guidelines for Using Assignment）
+
+
+
+
+
+
+
+
+
