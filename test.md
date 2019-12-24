@@ -2247,7 +2247,7 @@ lambda 形式可以定义按关键字（而不是按位置）传入的参数。�
 
 ```
 (define greet
-    (lambda (given #:;last surname)
+    (lambda (given #:last surname)
         (string-append "Hello, " given " " surname)))
 
 > (greet "John" #:last "Smith")
