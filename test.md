@@ -3240,7 +3240,7 @@ set!-values 形式一次性赋值多个变量（通过一个产生适当数量�
 2
 ```
 
-### 4.8引用：quote 和 '
+### 4.10引用：quote 和 '
 
 quote 形式产生一个常量：
 
@@ -3271,8 +3271,44 @@ datum 可以是 符号、布尔值、数字、字符/字节串、字符、关键
 '(1 2 3)
 ```
 
+上面显示的最后一个例子中，datum 不必和标准化打印形式一样。datum 不能是打印形式是以 #< 开头的内容，所以不能是 #\<void\>、#\<undefined\>或这一个过程。
 
+quote 形式很少用于本身就是布尔值、数字或字符串的数据，因为这些值的打印形式已经被用作为常量。quote 形式通常用于符号和列表，这些值在未被引用时有其他意义（标识符，函数调用等）。
 
+表达式
+
+```
+'datum
+```
+
+是下列形式的缩写
+
+```
+(quote dautm)
+```
+
+并且这个缩写通常用于取代 quote。这个简写甚至可以应用在 datum 中，所以它可以带引号的列表。
+
+例子：
+
+```
+> 'apple
+'apple
+> '"hello"
+"hello"
+> '(1 2 3)
+'(1 2 3)
+> (display '(you can 'me))
+(you can (quote me))
+```
+
+### 4.11 准引用：quasiquote and ‘（Quasiquoting: quasiquote and ‘）
+
+quasiquote 形式和 quote 类似：
+
+```
+(quasiquote datum)
+```
 
 
 
