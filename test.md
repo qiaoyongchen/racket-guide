@@ -3088,11 +3088,157 @@ set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)
 
 #### 4.9.1 使用赋值的参考指南 （Guidelines for Using Assignment）
 
+尽管使用 set! 有时是适当的，但是 racket 风格通常不鼓励使用 set!。下面的一些参考或许会告诉你何时使用 set! 是合适的。
 
+- 与其他现代语言一样，分配共享标识符不能代替将参数传递给过程或获取过程结果。
 
+**非常糟糕的**例子：
 
+```
+(define name "unknown")
+(define result "unknown")
+(define (greet)
+    (set! result (string-append "Hello, " name)))
 
+> (set! name "John")
+> (greet)
+> result
+"Hello, John"
+```
 
+合适的例子：
 
+```
+(define (greet name)
+    (string-append "Hello, " name))
 
+> (greet "John")
+"Hello, John"
+> (greet "Anna")
+"Hello, Anna"
+```
+
+- 一系列局部变量的赋值序列远不如嵌套绑定
+
+坏的例子：
+
+```
+> (let ([tree 0])
+    (set! tree (list tree 1 tree))
+    (set! tree (list tree 2 tree))
+    (set! tree (list tree 3 tree))
+    tree)
+'(((0 1 0) 2 (0 1 0)) 3 ((0 1 0) 2 (0 1 0)))
+```
+
+好的例子：
+
+```
+> (let* ([tree 0]
+         [tree (list tree 1 tree)]
+         [tree (list tree 2 tree)]
+         [tree (list tree 3 tree)])
+    tree)
+'(((0 1 0) 2 (0 1 0)) 3 ((0 1 0) 2 (0 1 0)))
+```
+
+- 使用赋值从迭代中累积结果是错误的方式。通过循环变量来累计更好一些。
+
+有点糟糕的例子：
+
+```
+(define (sum lst)
+    (let ([s 0])
+        (for-each (lambda (i) (set! s (+ i s)))
+                  lst)
+        s))
+
+> (sum '(1 2 3))
+```
+
+好一点的例子：
+
+```
+(define (sum lst)
+    (let loop ([lst lst] [s 0])
+        (if (null? lst)
+            s
+            (loop (cdr lst) (+ s (car lst))))))
+
+> (sum '(1 2 3))
+6
+```
+
+好的例子（一般方法）：
+
+```
+(define (sum list)
+    (for/fold ([s 0])
+              ([i (in-list lst)])
+        (+ s i)))
+
+> (sum '(1 2 3))
+6
+```
+
+- 若对于一个对象，状态是必须的而且适当的，那么使用 set! 实现对象的状态是和是的。
+
+合适的例子：
+
+```
+(define next-number!
+    (let ([n 0])
+        (lambda ()
+            (set! n (add1 n))
+            n)))
+
+> (next-number!)
+1
+> (next-number!)
+2
+> (next-number!)
+3
+```
+
+在其他条件相同的情况下，不使用赋值或可变的程序比使用赋值和可变的程序好。然而，这样虽然避免了副作用，但是如果代码的可读性更高，或者实现了一个更好的算法，他们还是应该被使用的。
+
+可变值的使用，比如数组和哈希表，这种程序的风格比直接使用 set! 减少了疑虑。尽管如此，简单地在程序中使用 vector-set! 替换 set! 并没有改善程序的风格。
+
+#### 4.9.2 多值：set!-values
+
+set!-values 形式一次性赋值多个变量（通过一个产生适当数量值的表达式）：
+
+```
+(set!-values (id ...) expr)
+```
+
+这种形式等价于使用 let-values 从 expr 接受多个结果，然后使用 set! 将结果逐个赋值个每个 id。
+
+例子：
+
+```
+(define game
+    (let ([w 0]
+          [l 0])
+        (lambda (win?)
+            (if win?
+                (set! w (+ w 1))
+                (set! l (+ l 1)))
+            (begin0
+                (values w l)
+                ; swap sides
+                (set!-values (w l) (values l w))))))
+
+> (game #t)
+1
+0
+> (game #t)
+1
+1
+> (game #f)
+1
+2
+```
+
+### 4.8引用：quote 和 '
 
