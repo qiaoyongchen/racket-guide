@@ -3310,6 +3310,124 @@ quasiquote 形式和 quote 类似：
 (quasiquote datum)
 ```
 
+然而，对于没一个出现在 datum 里的 (unquote expr)，expr 被执行并生成一个替代 unquote 子形式的值。
+
+例子：
+
+```
+> (quasiquote (1 2 (unquote (+ 1 2)) (unquote ()- 5 1)))
+'(1 2 3 4)
+```
+
+这个形式可以用于写根据某些形式建立列表的函数。
+
+例子：
+
+```
+> (define (deep n)
+    (cond
+        [(zero? n) 0]
+        [else 
+         (quasiquote ((unquote n) (unquote (deep (- n 1)))))]))
+> (deep 8)
+'(8 (7 (6 (5 (4 (3 (2 (1 0))))))))
+```
+
+或者甚至以编程的方式廉价的创建列表。（当然，十有八九，你会使用 macro 来做这些。）
+
+例子：
+
+```
+> (define (build-exp n)
+    (add-lets n (make-sum n)))
+> (define (add-lets n body)
+    (cond
+        [(zero? n) body]
+        [else 
+         (quasiquote
+            (let ([(unquote (n-var n)) (unquote n)])
+                (unquote (add-let (-n 1) body))))]))
+> (define (make-sum n)
+    (cond
+        [(= n 1) (n->var 1)]
+        [else 
+            (quasiquote (+ (unquote (n->var n))
+                           (unquote (make-sum (- n 1)))))]))
+> (define (n->var n) (string->symbol (format "x~a" n)))
+> (build-exp 3)
+'(let ((x3 3)) (let ((x2 2)) (let ((x1 1)) (+ x3 (+ x2 x1)))))
+```
+
+unquote-splicing 形式和 unquote 类似，但是它的 expr
+必须生成列表，并且 unquote-splicing 形式必须出现在产生在列表或数组的上下文中。顾名思义，结果列表被拼接进这个上下文中。
+
+例子：
+```
+> (quasiquote (1 2 (unquote-splicing (list (+ 1 2) (- 5 1))) 5))
+'(1 2 3 4 5)
+```
+
+
+使用拼接，我们可以修改上述示例的表达式的结构，是它只需要一个 let 表达式 和一个 + 表达式。
+
+例子：
+
+```
+> (define (build-exp n)
+    (add-lets
+     n
+     (quasiquote (+ (unquote-splicing
+                     (build-list
+                      n
+                      (λ (x) (n->var (+ x 1)))))))))
+> (define (add-lets n nody)
+    (quasiquote
+     (let (unquote
+           (build-list
+            n
+            (λ (n)
+              (quasiquote
+               [(unquote (n->var (+ n 1))) (unquote (+ n 1))]))))
+      (unquote body))))
+> (define (n->var n) (string->symbol (format "x~a" n)))
+> (build-exp 3)
+'(let ((x1 1) (x2 2) (x3 3)) (+ x1 x2 x3))
+```
+
+如果一个 quasiquote 形式出现在一个封闭的 quasiquote 形式中，那么内层 quasiquote 会有效的消除一层 unquote 和 unquote-splicing 形式，所以另一个 unquote 或者 unquote-splicing 是必需的。
+
+例子：
+
+```
+> (quasiquote (1 2 (quasiquote (unquote (+ 1 2)))))
+'(1 2 (quasiquote (unquote (+ 1 2))))
+> (quasiquote (1 2 (quasiquote (unquote (unquote (+ 1 2))))))
+'(1 2 (quasiquote (unquote 3)))
+> (quasiquote (1 2 (quasiquote ((unquote (+ 1 2)) (unquote (unquote (- 5 1)))))))
+'(1 2 (quasiquote ((unquote (+ 1 2)) (unquote 4))))
+```
+
+上面的执行不会如打印一样显示。而是使用 quasiquote 和 unquote 的简写 ` 和 ，。这些简写同样可以用在表达式中：
+
+例子
+
+```
+> `(1 2 `(,(+ 1 2) ,,(- 5 1)))
+'(1 2 `(,(+ 1 2) ,4))
+```
+
+unquote-splicing 的简写是 ,@ 
+
+例子
+
+```
+> `(1 2 ,@(list (+ 1 2) (- 5 1)))
+'(1 2 3 4)
+```
+
+### 4.12 单值分发：case （Simple Dispatch: case）
+
+
 
 
 
