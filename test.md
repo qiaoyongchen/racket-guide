@@ -3427,9 +3427,31 @@ unquote-splicing 的简写是 ,@
 
 ### 4.12 单值分发：case （Simple Dispatch: case）
 
+case 形式分发到一个子句（通过匹配表达式的结果和值）：
 
+```
+(case expr
+    [(datum ...+) bpdy ...+]
+    ...)
+```
 
+每一个 datum 都会使用 equal? 来和 expr 的结果进行比较，然后相应的 body 将会被执行。case 形式会在 N 条分支中，在 O(logN) 的时间分发到正确的子句。
 
+多个 datum 每个都可以提供一个子句，如果任何一个 datum 匹配，那么对应的 body 将会被执行。
+
+例子：
+
+```
+> (let ([v (radom 6)])
+    (printf "~a\n" v)
+    (case v
+      [(0) 'zero]
+      [(1) 'one]
+      [(2) 'two]
+      [(3 4 5) 'many]))
+5
+'many
+```
 
 
 
