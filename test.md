@@ -1860,7 +1860,7 @@ x: undefined;
   cannot use before initialization
 ```
 
-## 4.表达式和定义（Expressions and Definitions）
+## 4 表达式和定义（Expressions and Definitions）
 
 在 racket 要素一章介绍过一些 racket 的语法形式：定义、函数调用、条件句等等。这一节会展示这些形式的更多细节，和一些新增的基础形式。
 
@@ -3453,5 +3453,133 @@ case 形式分发到一个子句（通过匹配表达式的结果和值）：
 'many
 ```
 
+case 形式的最后一个子句可以是 else （和 cond 一样）：
+
+例子：
+
+```
+> (case (random 6)
+    [(0) 'zero]
+    [(1) 'one]
+    [(2) 'two]
+    [else 'many])
+```
+
+对于更一般的模式匹配(但是没有调度时间保证)，使用match。这会在模式匹配中进行介绍。
+
+### 4.13动态绑定：parameterize
+
+parameterize 形式在表达式体的计算期间，将一个新值和一个参数绑定。
+
+```
+(parameterize ([parameter-expr value-expr] ...)
+    body ...+)
+```
+
+比如，参数 error-print-width 控制一个值的多少字符被打印在错误信息中：
+
+```
+> (parameterize ([error-print-width 5])
+    (car (expt 10 1024)))
+car: contract violation
+    expected: pair?
+    given: 10...
+> (parameterize ([error-print-width 10])
+    (car (expt 10 1024)))
+car: contract violation
+    expected: pair?
+    given: 1000000...
+```
+
+更一般的讲，参数实现了一种动态绑定。函数 make-parameter 接受任何值并返回一个新的初始值为该值的变量。将参数作为函数使用并返回当前值：
+
+```
+> (define location (make-parameter "here"))
+> (location)
+"here"
+```
+
+在 parameterize 形式中，每个 parameter-expr 必须生成一个参数。在 body 执行期间，每个明确的参数的结果给定为对应的 value-expr。当执行代码离开 parameterize 形式时（不管是正常退出，异常退出，还是其他推出）,这个参数会还原到它之前的值。
+
+```
+> (parameterize ([location "there"])
+    (location))
+"there"
+> (location)
+"here"
+> (parameterize ([location "in a house"])
+    (list (location)
+          (parameterize ([location "with a mouse"])
+            (location))
+          (location)))
+'("in a house" "with a mouse" "in a house")
+> (parameterize ([location "in a box"])
+    (car (location)))
+car: contract violation
+    expected: pair?
+    given: "in a box"
+> (location)
+"here"
+```
+
+parameterize 形式不像 let 绑定一样，上面的每次 location 的使用都会直接引用原定义。在parameterize 表达式执行体被执行期间，parameterize 形式会修改参数的值，甚至即便是在 parameterize 执行体外部定义的参数也是一样。
+
+```
+> (define (would-you-could-you?)
+    (and (not (equal? (location) "here"))
+         (not (equal? (location) "there"))))
+> (would-you-could-you?)
+#f
+> (parameterize ([location "on a bus"])
+    (would-you-could-you?))
+#t
+```
+
+如果一个在生成值之前还未执行的 parameterize 执行体内部对一个变量进行使用，那么这次使用将不会看到 parameterize 形式对这个变量的修改：
+
+```
+> (let ([get (parameterize ([location "with a fox"])
+                (lambda () (location)))])
+    (get))
+"here"
+```
+
+通过把参数作为函数调用并获取值，当前变量的绑定可以被命令式的修改。如果一个 parameterize 已经修改了参数的值，那么直接应用参数仅影响与当前 parameterize 关联的值。
+
+```
+> (define (try-again! where)
+    (location where))
+> (location)
+"here"
+> (parameterize ([location "on a train"])
+    (list (location)
+          (begin (try-again! "in a boat")
+                 (location))))
+'("on a train" "in a boat")
+> (location)
+"here"
+```
+
+parameterize 的使用更适用于命令式的修改参数值，出于同样的原因，对于用 let 绑定的新值，使用 set! 更合适。
+
+可以看出，变量 和 set! 可以解决很多与参数相同的问题。比如, lokation 可以被定义为一个字符串，set! 可以用来修改它的值：
+
+```
+> (define lokation "here")
+> (define (would-ya-could-ya?)
+    (and (not (equal? lokation "here"))
+         (not (equal? lokation "there"))))
+> (set! lokation "on a bus")
+> (would-ya-could-ya?)
+#t
+```
+
+然而，parameterize 形式提供几个超过 set! 的优势:
+
+- 当执行由于异常推出时，parameterize 形式帮助自动重置参数的值。添加异常处理和其他形式的 set! 恢复是很乏味的。
+- 参数可以与尾递归漂亮的工作。parameterize 形式的最后一个执行体相对于 parameterize 形式处于尾部位置。
+- 参数对多线程工作的好。parameterize 形式只在当前线程的执行中修改参数的值，这样避免了和其他线程的竞争。
+
+## 5程序员定义的数据类型（Programmer-Defined Datatypes）
 
 
