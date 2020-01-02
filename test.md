@@ -3580,6 +3580,75 @@ parameterize 的使用更适用于命令式的修改参数值，出于同样的�
 - 参数可以与尾递归漂亮的工作。parameterize 形式的最后一个执行体相对于 parameterize 形式处于尾部位置。
 - 参数对多线程工作的好。parameterize 形式只在当前线程的执行中修改参数的值，这样避免了和其他线程的竞争。
 
-## 5程序员定义的数据类型（Programmer-Defined Datatypes）
+## 5 程序员定义的数据类型（Programmer-Defined Datatypes）
+
+新数据类型通常用 struct 形式创建，这便是这节的主题。基于类型的对象系统（参考 Classes and Objects）提供了创建新数据类型的代替方案，但是即便是类型和对象也遵循数据结构的规则。
+
+### 5.1 简单结构类型：struct
+
+第一个相似之处是，struct 的语法是
+
+```
+(struct struct-id (field-id ...))
+```
+
+例子：
+
+```
+(struct posn (x y))
+```
+
+struct 形式绑定 struct-id 和一些 struct-id 创建的标识符以及 field-id：
+
+- struct-id:一个构造函数，它接受和 field-id 数量一致的参数，并返回结构类型的实例。
+
+例子：
+
+```
+> (posn 1 2)
+#<posn>
+```
+
+- struct-id?:一个判断函数，它接受一个单一的参数，并且返回 #t（如果是该结构类型的实例），#f（如果不是该结构类型的实例）。
+
+例子：
+
+```
+> (posn? 3)
+#f
+> (posn? (posn 1 2))
+#t
+```
+
+- struct-id-field-id:对于每个 field-id，是一个从结构类型实例中提取对应字段值的访问器。
+
+例子：
+
+```
+> (posn-x (posn 1 2))
+1
+> (posn-y (posn 1 2))
+2
+```
+
+- struct:struct-id : 是一个结构类型的描述器，它是一个值，这个值将结构类型表示为第一类值。
+
+struct 形式对结构类型实例中的字段可能出现的值类型不进行约束。例如，尽管 "apple" 和 #f 明显不符合 posn 实例的用法，(posn "apple" #f) 仍然产生一个 posn 的实例。强制约束字段的值，比如要求它们是数字，这是 contract 的工作，后面我们会讨论 Contract。
+
+## 5.2 复制和更新
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
