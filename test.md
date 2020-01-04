@@ -3637,13 +3637,71 @@ struct 形式对结构类型实例中的字段可能出现的值类型不进行�
 
 ## 5.2 复制和更新
 
+struct-copy 形式在克隆时，克隆一个结构并选择性的更新规定字段。这个操作有时被称为功能更新（functional update），以为产生的结果是一个被更新过字段的结构。但是原结构并没有被修改。
 
+```
+(struct-copy strucr-id struct-expr [field-id expr] ...)
+```
 
+出现在 struct-id 后面的 struct-copy 必须是名称已绑定为 struct 的结构类型（名称不能直接被用作表达式）。struct-expr 必须生成一个该结构类型的实例。结构是和旧值类似的一个新的该类型的实例（除非每个 filed-id 指定的字段都获取了对应 expr 的值）。
 
+```
+> (define p1 (posn 1 2))
+> (define p2 (struct-copy posn p1 [x 3]))
+> (list (posn-x p2) (posn-y p2))
+'(3 2)
+> (list (posn-x p1) (posn-y p1))
+'(1 2)
+```
 
+### 5.3结构子类型（Structure Subtypes）
 
+struct 的扩展形式可以用于定义结构子类型（基于现有类型扩展而来的类型）。
 
+```
+(struct struct-id super-id (field-id ...))
+```
 
+super-id 必须是已绑定为 struct 的类型名称。（名称不能直接作为表达式使用）
+
+例子：
+
+```
+(struct posn (x y))
+(struct 3d-posn posn (z))
+```
+
+结构子类型集成了父类型的字段，并且构造器在接受父类型字段值之后接受子类型字段值。子类型的实例可以用于父类型的判断函数和接收器。
+
+例子：
+
+```
+> (define p (3d-posn 1 2 3))
+> p
+#<3d-posn>
+> (posn? p)
+#t
+> (3d-posn-z p)
+3
+; a 3d-posn has an x field, but there is no 3d-posn-x selector:
+> (3d-posn-x p)
+3d-posn-x: undefined;
+ cannot reference an identifier before its definition
+  in module: top-level
+; use the supertype's posn-x selector to access the x field:
+> (posn-x p)
+1
+```
+
+### 5.4 不透明与透明结构类型
+
+当一个结构类型被定义这样
+
+```
+(struct posn (x y))
+```
+
+这类结构类型的实例的打印方式不会显示字段的任何信息。那是因为结构类型模式是不透明的。如果一个结构类型的访问器和修改器对模块保持私有，那么没有其它模块可以依赖该类型实例的表示。
 
 
 
