@@ -3713,15 +3713,53 @@ super-id 必须是已绑定为 struct 的类型名称。（名称不能直接作
 (posn 1 2)
 ```
 
-一个透明的结构类型实例打印起来就行构造函数的一次调用，即它会显示该结构字段的值。透明结构类型同样允许常规操作它的实例，比如 struct? 和 struct-info。
+一个透明的结构类型实例打印起来就像构造函数的一次调用，即它会显示该结构字段的值。透明结构类型同样允许常规操作它的实例，比如 struct? 和 struct-info。
 
 结构类型默认是不透明的，因为不透明的结构实例提供了更多的封装保证。也就是说，一个库可以使用不透明的结构来封装数据，除非该库允许，否则该库的调用方不能操纵这个结构的数据。
 
 ### 5.5 结构比较
 
+通用的 equal? 比较自动在透明结构类型的字段上递归，但是对于非透明的结构类型仅仅比较实例的标识符：
 
+```
+(struct glass (width height) #:transparent)
 
+> (equal? (glass 1 2) (glass 1 2))
+#t
+```
 
+```
+(struct lead (width height))
+
+> (define slab (lead 1 2))
+> (equal? slab slab)
+#t
+> (equal? slab (lead 1 2))
+#f
+```
+
+为了支持实例不使用透明结构就可以通过 equal? 比较，你可以使用 #:method 关键字、gen:equal+hash、并实现三个方法:
+
+```
+(struct lead (width height)
+    #:methods
+    gen:equal+hash
+    [(define (equal-proc a b equal?recur)
+        ; compare a and b
+        (and (equal?-recur (lead-with a) (lead-with b))
+             (equal?-recur (lead-height a) (lead-height b))))
+     (define (hash-proc a hash-recur)
+        ; compare primary hash code of a
+        (+ (hash-recur (lead-width a))
+            (* 3 (hash-recur (lead-height a)))))
+     (define (hash2-proc a hash2-recur)
+        ; compute secondary hash code of a
+        (+ (hash2-recur (lead-width a))
+           (hash2-recur (lead-height a))))])
+
+> (equal? (lead 1 2) (lead 1 2))
+#t
+```
 
 
 
