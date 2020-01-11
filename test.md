@@ -3635,7 +3635,7 @@ struct 形式绑定 struct-id 和一些 struct-id 创建的标识符以及 field
 
 struct 形式对结构类型实例中的字段可能出现的值类型不进行约束。例如，尽管 "apple" 和 #f 明显不符合 posn 实例的用法，(posn "apple" #f) 仍然产生一个 posn 的实例。强制约束字段的值，比如要求它们是数字，这是 contract 的工作，后面我们会讨论 Contract。
 
-## 5.2 复制和更新
+### 5.2 复制和更新
 
 struct-copy 形式在克隆时，克隆一个结构并选择性的更新规定字段。这个操作有时被称为功能更新（functional update），以为产生的结果是一个被更新过字段的结构。但是原结构并没有被修改。
 
@@ -3760,6 +3760,30 @@ super-id 必须是已绑定为 struct 的类型名称。（名称不能直接作
 > (equal? (lead 1 2) (lead 1 2))
 #t
 ```
+
+列表中的第一个函数作用在两个 lead 上，实现了 equal? 测试：函数的第三个参数在递归情况用来取代 equal? 进行相等性测试，以便可以正确的处理循环数据。另外两个方法分别计算用于哈希表的主、次哈希码：
+
+```
+> (define h (make-hash))
+(hash-set! h (lead 1 2) 3)
+(hash-ref h (lead 1 2))
+3
+> (hash-ref h (lead 2 1))
+hash-ref: no value found for key
+  key: #<lead>
+```
+
+提供 gen:equal+hash 的第一个函数不必递归比较结构字段。比如，表示集合的结构类型可以通过检查集合的成员是否相等（与内部表示的元素的顺序无关）来实现相等。仅仅需要担心的是，对于任何两个应该是等价的结构类型，hash 函数应该生成相同的值。
+
+### 5.6 结构类型生成（Structure Type Generativity）
+
+
+
+
+
+
+
+
 
 
 
