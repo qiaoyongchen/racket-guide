@@ -3988,9 +3988,54 @@ set-person-name!: undefined;
 thing: bad name: 1/2
 ```
 
+甚至在子类型实力被创建时，保护函数也会被执行。在那种情况下，只有被构造函数结构的字段才被提供给保护函数（但是子函数的保护函数获取原始字段和子类型新增的字段）。
 
+例子:
 
+```
+> (struct person thing (age)
+          #:transparent
+          #:guard (lambda (name age type-name)
+                    (if (negative? age)
+                        (error type-name "bad age: ~e" age)
+                        (values name age))))
+> (person "Jhon" 10)
+(person "Jhon" 10)
+> (person "Mary" -1)
+person: bad age: -1
+> (person 10 10)
+person: bad name: 10
+```
 
+```
+#:methods interface-expr [body ...]
+```
+
+关联对应于一个通用接口的结构类型的方法定义。例如，为 gen:dict 实现方法允许结构类型的实例用于字典。为 gen:custom-write 实现方法允许定制一个结构类型的实例怎样被显示。
+
+例子:
+
+```
+> (struct cake (candles)
+          #:methods gen:custom-write
+          [(define (write-proc cake port mode)
+             (define n (cake-candles cake))
+             (show "   ~a   ~n" n #\. port)
+             (show " .-~a-. ~n" n #\| port)
+             (show " | ~a | ~n" n #\space port)
+             (show "---~a---~n" n #\- port))
+            (define (show fmt n ch port)
+             (fprintf port fmt (make-string n ch)))])
+> (display (cake 5))
+   .....   
+ .-|||||-. 
+ |       | 
+-----------
+```
+
+```
+#:property prop-expr val-expr
+```
 
 
 
