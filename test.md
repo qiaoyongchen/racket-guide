@@ -4037,6 +4037,57 @@ person: bad name: 10
 #:property prop-expr val-expr
 ```
 
+对结构类型关联一个属性和值。比如，prop:procedure 属性允许结构类型实例可以作为函数被使用；属性值决定当把结构作为函数使用时，调用如何实现。
+
+例子：
+
+```
+> (struct greeter (name)
+          #:property prop:procedure
+                     (lambda (self other)
+                       (string -ppend
+                        "Hi " other
+                        ", I'm " (greeter-name self))))
+(define joe-greet (greeter "Joe"))
+
+> (greeter-name joe-greet)
+"Joe"
+> (joe-greet "Mary")
+"Hi mary, I'm Joe"
+> (joe-greet "John")
+"Hi John, I'm Joe"
+```
+
+```
+#:super super-expr
+```
+
+给 struct-id 提供 super-id 的一种替代方案。区别于结构类型的名字(不是表达式)，super-expr 可以生成结构类型描述器的值。#:super 更好的一点是，结构类型描述器是值，所以可以被传递给函数。
+
+例如:
+
+```
+(define (raven-constructor super-type)
+    (struct raven ()
+            #:super super-type
+            #:tanransparent
+            #:property prop:procedure (lambda (self)
+                                        'nevermore))
+    raven)
+
+> (let ([r ((raven-constructor struct:posn) 1 2)])
+    (list r (r)))
+(list (raven 1 2) 'nevermore)
+> (let ([r ((raven-constructor struct:thing) "apple")])
+    (list r (r)))
+(list (raven "apple") 'nevermore)
+```
+
+
+
+
+
+
 
 
 
