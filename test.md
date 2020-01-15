@@ -3777,6 +3777,177 @@ hash-ref: no value found for key
 
 ### 5.6 结构类型生成（Structure Type Generativity）
 
+每当一个 struct 形式被执行，就会生成一个和已有所有结构类型都不同的结构类型（即使一些其他的结构类型有相同的名字和字段）。
+
+这种生成方式对执行抽象和实现诸如解释器之类的程序很有用，
+但是要注意不要将 struct 形式放在进行多次求值的地方。
+
+例子:
+
+```
+(define (add-bigger-fish lst)
+    (struct fish (size) #:transparent) ; new every time
+    (cond
+        [(null? lst) (list (fish 1))]
+        [else (cons (fish (* 2 (fish-size (car lst))))
+                    lst)]))
+
+> (add-bigger-fish null)
+(list (fish 1))
+> (add-bigger-fish (add-bigger-fish null))
+fish-size: contract violation;
+ given value instantiates a different structure type with
+the same name
+  expected: fish?
+  given: (fish 1)
+```
+
+```
+(struct fish (size) #:transparent)
+(define (add-bigger-fish lst)
+    (cond
+        [(null? lst) (list (fish 1))]
+        [else (cons (fish (* 2 (fish-size (car lst))))
+                    lst)]))
+> (add-bigger-fish (add-bigger-fish null))
+(list (fish 2) (fish 1))
+```
+
+### 5.7 预置结构类型（Prefab Structure Types）
+
+尽管透明(transparent)结构类型通过显示自身内容的方式进行打印，但是在表达式中，结构的这种打印形式不能用来获取结构(不像 number、string、symbol、和 list 一样)。
+
+预置("previously fabricated")结构类型是一个已经被 racket 打印器和表达式读取器知晓的内置类型。存在无限多的这种类型，并且按名称、字段数量、父类型和其他这类的细节进行索引。预置结构的打印形式类似于数组，但是以 #s 而不只是 # 开始，并且打印形式的第一个元素是预置结构类型的名字。
+
+下面的例子显示含有一个字段的 sprout 预置结构类型的实例。第一个实例包涵字段值 'bean，第二个包含字段值 'alfalfa：
+
+```
+> '#s(sprout bean)
+'#s(sprout bean)
+> '#s(sprout alfalfa)
+'#s(sprout alfalfa)
+```
+
+像 number 和 string，预置结构是“自引用”，所以引号是可选的：
+
+```
+> #s(sprout bean)
+'#s(sprout bean)
+```
+
+当你在 struct 时使用 #:prefab 关键字，不是生成一个新类型，而是获取了已存在预置结构类型的绑定：
+
+```
+> (define lunch '#s(sprout bean))
+> (struct sprout (kind) #:prefab)
+> (sprout? lunch)
+#t
+>(sprout-kind lunch)
+'bean
+>(sprout 'garlic)
+'#s(sprout garlic)
+```
+
+上述 kind 字段名对于找到预置结构类型不重要（只要 sprout 名称和字段数量匹配）。同时，有三个字段的预置结构类型 sprout 和有一个字段的不一样。
+
+```
+> (sprout? #s(sprout bean #f 17))
+#f
+> (struct sprout (kind yummy? count) #:prelab) ;redefine
+> (sprout? #s(sprout bean #f 17))
+#t
+> (sprout? lunch)
+#f
+```
+
+预置结构类型可以有另一个预置结构类型作为它的父类型，它可以有可变字段，也可以有自动字段。这些变化对应不同预置结构类型，结构类型名称的打印形式封装了所有相关细节。
+
+```
+> (struct building (rooms [location #:mutable]) #:prelab)
+> (struct house building ([occupied #:auto]) #:prelab
+    #:auto-value 'no)
+> (house 5 'factory)
+'#s((house (1 no) building 2 #(1)) 5 factory no)
+```
+
+每个预置类型都是透明的，但是没有透明类型抽象，因为可以不需要对特定结构类型的声明或现有示例进行访问就可以创建实例。总的来说，结构类型的不同选项提供了从更抽象到更方便的各种可能性：
+
+- **不透明(Opaque)**(默认):在不访问结构类型申明的情况下，不能检查和伪造。如下一节讨论的，构造函数保护和属性可以添加到结构类型以进一步保护或专门化其实例的行为。
+
+- **透明(Transparent)**:在不访问结构类型声明的情况下，任何人都可以检查或创建一个实例，这表示值打印器可以显示实例的内容。然而所有实例的创建都要经过构造函数保护，以便控制实例的内容，并且可以通过属性专门化实例的行为。由于结构内行是由其定义生成的，因此不能简单地通过结构类型的名称来生成实例，因此不能由表达式读取器自动生成实例。
+
+- **预置(Prefab)**:在没有预先访问结构类型的定义或者实例的情况下，任何人都可以在任何时候检查或创建实例。因此，表达式读取器可以直接生成实例。这样的实例不能有构造函数保护或者属性。
+
+由于表达式读取器可以生成预置实例，所以当方便的序列化比抽象更重要的时候，这是很有用处的。然而，如果不透明和透明的结构被如 Datatypes and Serialization 中所述的 serializable-struct 定义的话也可以被序列话。
+
+### 5.8更多结构类型的选项
+
+struct 的全语法支持很多选项，包括结构类型级别和单独的字段级别：
+
+```
+(struct struct-id maybe-super (field ...)
+        struct-option)
+maybe-super = 
+            | super-id
+      field = field-id
+            | [field-id field-option ...]
+```
+
+struct-option 总是以一个关键字开始：
+
+```
+#:mutable
+```
+
+使结构的全部字段可变，并对每个 field-id 使用可变器 set-struct-id-field-id!(这会设置结构类型实例的对应字段值)。
+
+例子:
+
+```
+> (struct dot (x y) #:mutable)
+(define d (dot 1 2))
+
+> (dot-x d)
+1
+> (set-dot-x! d 10)
+> (dot-x d)
+10
+```
+
+#:mutable 选项同样可以用于 field-option，在这种情况下使得单独的字段可变。
+
+例子:
+
+```
+> (struct person (name [age #:mutable]))
+(define friend (person "Barney" 5))
+> (set-person-age! friend 6)
+> (set-person-name! friend "Mary")
+set-person-name!: undefined;
+ cannot reference an identifier before its definition in module: top-level
+```
+
+```
+#:transparent
+```
+
+通过结构实例控制反射，如前一节讨论过的，Opaque versus Transparent Structure Types。
+
+```
+#:inspector inspector-expr
+```
+
+泛化 #:tarasparent 以支持对反射操作更可控的访问。
+
+
+```
+#:prefab
+```
+
+访问一个内置的结构类型，如前一节所述，Prefab Structure Types。
+
+
+
 
 
 
