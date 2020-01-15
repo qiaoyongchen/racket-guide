@@ -3946,11 +3946,47 @@ set-person-name!: undefined;
 
 访问一个内置的结构类型，如前一节所述，Prefab Structure Types。
 
+```
+#:auto-value auto-expr
+```
 
+指定要用于结构类型中所有自动字段的值，其中自动字段由：#auto 字段选项指示。构造函数不接受自动字段参数。自动字段是隐式可变的(通过反射操作)，但是可变函数只在 #:mutable 被指定时才被绑定。
 
+例子:
 
+```
+> (struct posn (x y [z #:auto])
+               #:transparent
+               #:auto-value 0)
+> (posn 1 2)
+(posn 1 2 0)
+```
 
+```
+#:guard guard-expr
+```
 
+当结构类型的实例被创建时，指定构造函数保护过程被执行。保护函数接受和该结构类型非自动字段个数一样多的参数，再加上实例化类型的名字。保护函数需要返回的参数数量和给定一样，再减去实例化类型的名字，或者它可以覆盖一个参数。
+
+例子：
+
+```
+> (struct thing (name)
+          #:transparent
+          #:guard (lambda (name type-name)
+                    (cond
+                        [(string? name) name]
+                        [(symbol? name) (symbol->string name)]
+                        [else (error type-name
+                                     "bad name: ~e"
+                                     name)])))
+> (thing "apple")
+(thing "apple")
+> (thing 'apple)
+(thing "apple")
+> (thing 1/2)
+thing: bad name: 1/2
+```
 
 
 
