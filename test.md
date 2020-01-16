@@ -4083,10 +4083,107 @@ person: bad name: 10
 (list (raven "apple") 'nevermore)
 ```
 
+## 6 模块
 
+模块使你在多个文件和可复用的库中组织 racket 代码。
 
+### 6.1 模块的基本介绍
 
+每个 racket 模块基本都位于它所在的文件。例如，假设 ”cake.rkt“ 文件包含下面的模块:
 
+```
+“cake.rkt“
+```
+```
+#lang racket
+
+(provide print-cake)
+
+; draws a cake with n candles
+(define (print-cake n)
+    (show "   ~a   " n #\.)
+    (show " .-~a-. " n #\|)
+    (show " | ~a | " n #\space)
+    (show "    a   " n #\-))
+
+(define (show fmt n ch)
+    (printf fmt (make-string n ch))
+    (newline))
+```
+
+那么，其他模块可以导入“cake.rkt”使用 print-cake 函数，因为“cake.rkt”中provide 那行明确地导出了 print-cake 的定义。show 函数是”cake.rkt“私有的(即它不能被其他模块使用)，因为 show 函数没有被到处。
+
+下面的”random-cake.rkt“模块引入了”cake.rkt“：
+
+```
+”random-cake.rkt“
+```
+```
+#lang racket
+
+(require "cake.rkt")
+
+(print-cake (random 30))
+```
+
+如果”cake.rkt“和”random-cake.rkt“模块位于同一目录，那么引入的(require "cake.rkt")可以使用。unix 风格的相对路径作用于所有平台上的模块引用，非常类似HTML页面中的相对路径。
+
+#### 6.1.1 组织模块
+
+”cake.rkt“和”random-cake.rkt“例子最常用的方式来组织模块中的程序：把所有模块文件放在单一目录（可能有子目录），然后通过相对路径持有彼此的模块引用。因为该单一目录可以在文件系统上移动或复制到其他机器上，相对路径保存模块间的联系，所以这些模块的目录可以当成一个项目。
+
+另个程序，假如你正在创建糖果分类的程序，你可能需要一个使用其他模块访问数据库并且控制分类程序的”sort.rkt“模块。如果这个糖果数据库模块本身已被组织进处理条形码和制造商信息的子模块，那么数据库模块可以是“db/lookup.rkt”，它使用帮助模块“db/barcodes.rkt”和“db/makers.rkt”。类似地，分类程序驱动”machine/control.rkt“可以使用帮助模块”machine/sensors.rkt“和”machine/actuators.rkt“。
+
+![xxx](https://docs.racket-lang.org/guide/pict.png "optional title")
+
+"sort.rkt"模块使用相对路径”db/lookup.rkt“和”machine/control.rkt“来从数据库和控制程序导入：
+
+```
+”sort.rkt“
+```
+```
+#lang racket
+(require ”db/lookup.txt“ ”machine/control.rkt“)
+....
+```
+
+”db/lookup.rkt“模块同样使用相对它自身的路径访问”db/barcodes.rkt“和”db/makers.rkt“模块：
+
+```
+”db/lookup.rkt“
+```
+```
+#lang racket
+(require "barcode.rkt" "makers.rkt")
+....
+```
+
+"machine/control.rkt"同上：
+
+```
+”machine/control.rkt“
+```
+```
+#lang racket
+(require "sensors.rkt" "actuators.rkt")
+....
+```
+
+racket 工具自动使用相对路径运行。例如
+
+```
+racket sort.rkt
+```
+
+在命令行运行”sort.rkt“程序，自动加载和编译引入的模块。在一个足够大的程序中，从源码编译时间非常长，所以使用
+
+```
+raco make sort.rkt
+```
+
+来进行编译”sort.rkt“和所有它的依赖为字节码文件。运行 *racket sort.rkt* 时，当字节码存在会自动使用字节码。
+
+#### 6.1.2 库集合（Library Collections）
 
 
 
