@@ -4185,6 +4185,63 @@ raco make sort.rkt
 
 #### 6.1.2 库集合（Library Collections）
 
+集合是已安装库模块的分层分组形式。集合中的模块通过非引用、无后缀的路径被引用。例如，如下模块指向"racket"集合中的”date.rkt“库。
+
+```
+#lang racket
+
+(require racket/date)
+
+(printf "Today is ~s\n"
+        (date->string (seconds->date (current-seconds))))
+```
+
+当你搜索在线 racket 文档，搜索结果指明提供每个绑定的模块。或者，如果你通过点击超链接到达绑定的文档，你可以将鼠标悬停在绑定名称上，找出哪些模块提供了绑定名陈。
+
+像 racket/date 这样的引用看起来想一个标识符，但是对待方式和 printf 或者 date->string 不一样。取而代之的是，当 require 看到一个未用引号的模块引用，它会把这个模块引用转换为基于集合（collection-based）的模块路径。
+
+- 首先，如果这个未使用引号的路径不包含 /，那么 require 自动 添加”/main“到这个模块引用。例如，(require slideshow) 等价于 (require slideshow/main)。
+
+- 其次，require 隐式地添加".rkt"后缀到该路径。
+
+- 最后，require 通过搜索已安装的库的集合来解析出路径，而不是把路径看成相对于当前模块路径。
+
+对于上述第一点，模块集合是当作文件系统目录实现的。例如，”racket“ 集合通常位于 racket 安装目录的 ”collect“目录里的 ”racket“目录，用如下方式显示
+
+```
+#lang racket
+
+(require setup/dirs)
+
+(build-path (find-collects-dir) ; main collection directory
+            "racket")
+```
+
+然而，racket 安装目录的 ”collect“ 目录只是唯一的可供 require 查找的地方。其他地方包括通过 (find-user-collects-dir) 报告出的用户制定的目录和通过 PLTCOLLECTS 搜索路径配置的目录。最后，也是最经典的，集合通过安装过的包来查找。
+
+#### 6.1.3 包和集合（Packages and Collections）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
