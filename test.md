@@ -4221,21 +4221,100 @@ raco make sort.rkt
 
 #### 6.1.3 包和集合（Packages and Collections）
 
+包是一组通过包管理器安装过的库的集合（或作为预装在Racket发行版中的库）。例如, racket/gui 库由”gui“包提供，而 parser-tools/lex 由”parser-tools“库提供。
 
+racket 程序不直接引用包。取而代之的是，程序通过集合引用库，并且添加和移除一个包来使得基于集合的一组库可用。单独的包可以在多个集合中提供库，两个不同的包可以在同一个集合中提供库（但不是同一个库，并且包管理器确保不能和已安装的包冲突）。
 
+#### 6.1.4 添加集合（Adding Collections）
 
+回看组织模块那节的糖果分类的例子，假设”db/“和”machine/“模块需要共同的帮助函数的集合。帮助函数可以放进”utils/“目录，那么”db/“和”machine/“中的模块可以可以通过以”../utils/“开头的相对路径访问工具模块。只要一组模块在单个目录中协同工作，最好坚持使用相对路径。程序员可以在不知道 racket 配置的情况下跟踪相对路径的引用。
 
+有些库需要跨多个项目被使用，因此将库源码保存在它使用的目录不符合场景。在这种情况下，最好的建议是添加一个新的集合。当该库在一个集合了之后，它可以使用不带引号的地址来引用，就那些 racket 发行版中包含的库一样。
 
+你可以通过把文件放到 racket 安装目录或者通过(get-collects-search-dirs)报告出来的目录出来新增一个集合。或者你添加到通过设置 PLTCOLLECTS 环境变量的目录列表。然而，最好的建议是添加一个包。
 
+创建一个包不是意味着你必须通过包服务器注册或者执行一个复制你的源码到文档格式的捆绑步骤。创建包可以简单的理解为使用包管理器来使你的库作为集合（基于源码位置），从而本地可访问，
 
+例如，假设你有一个包含”cake.rkt“模块和其他关联模块的目录”/usr/molly/bakery“。为了使这些模块当作”bakery“集合可用，你可以
 
+- 使用 raco pkg 命令行工具:
 
+```
+raco pkg install --link /usr/molly/bakery
+```
 
+当提供的路径包含文件分割符，这里的 --link 标识实际上是不需要的。
 
+- 使用 DrRacket 中 File 菜单的 Package Manager。在 Do What I Mean 面板，点击 Browse...，选择”/usr/molly/bakery“目录，然后点击 Install。
 
+之后，从任何模块(require bakery/cake)都会从”/usr/molly/bakery/cake.rkt“导入 print-cake 函数。
 
+默认情况下，安装的目录名同时用于用于包名和集合名。同时，包管理器通常默认为当前用户安装，而不是 racket 安装的所有用户。
 
+如果你准备分发你的库给其他人，慎重选择集合和包的名字。集合的命名空间是分层次的，但是顶层的集合名字是全局的，包的命名空间是扁平的。
 
+当你的库被放进集合后，你可以一直使用 raco 编译库源码，但是更好和更方便的是使用 raco setup。raco setup 命令行接受集合名（不是文件名）并编译集合内的所有库。此外，raco 可以建立集合的文档并添加到文档索引，如集合中的“info.rkt”模块所指定的。
+
+### 6.2 模块语法
+
+模块文件开始处的 #lang 开启一个模块形式的缩写，非常类似 quote 形式的缩写。不像 ' ，#lang 缩写在 REPL 中不能很好工作，一个原因是它必须在文件结尾处终止，另一个原因是 #lang 的长扩展表达式依赖封闭的文件名称。
+
+#### 6.2.1 module形式（The module Form）
+
+模块的非缩写形式在 REPL 和文件中都工作的很好
+
+```
+(module name-id initial-module-path
+    decl ...)
+```
+
+这里的 name-id 是模块名，initial-module-path 是初始化导入，每个decl都是一个导入、导出、定义或者表达式。在一个文件里，name-id通常匹配的是文件名出去目录路径和后缀，但是当模块通过文件路径引入，name-id 被忽略。
+
+initial-module-path 是必须的，因为即使是 require 形式也必须导入，以便在模块体中进一步使用。换句话说，initial-module-path 导入引导了模块体中的语法。最通常被用的 initial-module-path 是 racket，它提供了本指南中描述的大多数绑定，包括 require、define 和 provide。另一个常用的 initial-module-path 是 racket/base，它提供的功能稍少一些，但是仍然提供了许多最常用的功能和语法。
+
+例如，上一节的”cake.rkt“可以被写为
+
+```
+(module cake racket
+    (provide print-cake)
+    
+    (define (print-cake n)
+        (show "   ~a   " n #\.)
+        (show " .-~a-. " n #\|)
+        (show " | ~a | " n #\space)
+        (show "---~a---" n #\-))
+    
+    (define (show fmt n ch)
+        (printf fmt (make-string n ch))
+        (newline)))
+```
+
+此外，这个 module 形式可以在 REPL 中执行来声明一个和任何文件无关的 cake 模块。quote 这个模块名，以引用这个无关联的模块，
+
+例子：
+
+```
+> (require 'cake)
+> (print-cake 3)
+   ...   
+ .-|||-. 
+ |     | 
+---------
+```
+
+声明一个模块不会立即执行模块体的定义和表达式。模块必须在顶层导入来触发执行。当执行被触发一次后，之后的 require 不会再次执行模块体。
+
+例如：
+
+```
+> (module hi racket
+    (printf "Hello\n"))
+> (require 'hi)
+Hello
+> (require 'hi)
+```
+
+### 6.2.2 #lang 缩写
 
 
 
