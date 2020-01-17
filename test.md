@@ -4316,6 +4316,54 @@ Hello
 
 ### 6.2.2 #lang 缩写
 
+#lang 缩写的模块体没有特别的语法，因为语法决定于 #lang 后面的语言。
+
+以 #lang racket 为例，语法为
+
+```
+#lang racket
+decl ...
+```
+
+它被翻译为
+
+```
+(module name racket
+    decl ...)
+```
+
+这里的 name 从包含 #lang 形式的文件名生成。
+
+#lang racket/base 形式与 #lang racket 有相同的语法，除了展开后使用 racket/base 代替 racket。相反，#lang scribble/manual 形式，有一个完全不同的语法，甚至看起来不像 racket，我们不打算在本指南中描述。
+
+除非另有规定，一个使用 #lang 表示法以”language“标明的模块将会和 #lang racket 一样展开模块。标明的语言名也可以直接和 module 或者 require 使用。
+
+### 6.2.3 子模块（Submodules）
+
+一个模块可以被嵌套进另一个模块，这样的话，被嵌套的模块声明了一个子模块。子模块可以被包围的模块以”quote 模块名“的方式直接引用。下面的例子从 zoo 子模块导入 tiger 并打印 ”Tony“： 
+
+```
+"park.rkt"
+```
+```
+#lang racket
+(module zoo racket
+    (provide tiger)
+    (define tiger "Tony"))
+
+(require 'zoo)
+
+tiger
+```
+
+
+
+
+
+
+
+
+
 
 
 
