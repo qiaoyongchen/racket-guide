@@ -4765,3 +4765,22 @@ only-in、except-in、rename-in 和 prefix-in 形式可以嵌套以实现被导�
 
 ### 6.5 导出:provide
 
+默认情况下，模块所有的定义都是私有的。provide 形式指定哪些模块可被导入。
+
+```
+(provide provide-spec ...)
+```
+
+provide 只可能出现在模块一级（模块体中）。
+
+
+
+
+
+
+
+
+
+
+
+
