@@ -4356,19 +4356,412 @@ decl ...
 tiger
 ```
 
+运行一个模块不必运行它的子模块。上面的例子中，运行”park.rkt“就运行它的子模块”zoo“只是因为”park.rkt“模块
+导入了 zoo 子模块。否则，一个模块和它的每个子模块可以独立运行。此外，如果”park.rkt“被编译成字节码文件（通过 raco make），那么”park.rkt“的字节码或者 zoo 的字节码将被独立加载。
 
+子模块可以被嵌套进子模块，并且子模块可以被模块直接引用，而不是像外层模块一样使用子模块路径。
 
+module* 形式类似嵌套模块的形式：
 
+```
+(module* name-id initial-module-path-or-#f
+    decl ...)
+```
 
+module* 形式和 module 不同的是，它反转了子模块和外层模块的引用。
 
+- module 形式的子模块可以被外层模块导入，但是子模块不能导入外层模块或从外部引用外层模块的绑定。
 
+- module* 形式的子模块可以导入外层模块，但是外层模块不能导入子模块。
 
+此外，module* 形式可以指定 #f 替换 initial-module-path，在这种情况下，子模块可以看到所有外层模块的绑定（包括没有被 provide 导出的绑定）。
 
+module* 形式的子模块和 #f 的一个用处是通过从外层模块没有正常导出的子模块来导出额外的绑定。
 
+```
+”cake.rkt“
+```
+```
+#lang racket
 
+(provide print-cake)
 
+(define (print-cake n)
+    (show "   ~a   " n #\.)
+    (show " .-~a-. " n #\|)
+    (show " | ~a | " n #\space)
+    (show "---~a---" n #\-))
 
+(define (show fmt n ch)
+    (printf fmt (make-string n ch))
+    (newline))
 
+(module* extras #f
+    (provide show))
+```
 
+在这个修改过的”cake.rkt“模块中，show 函数被有被使用 (require "cake.rkt") 的模块导入，因为大部分”cake.rkt“的调用端不想要这个额外的方法。模块可以使用 (require (submod "cake.rkt" extras)) 来导入额外的 子模块来访问隐藏的 show 方法。
 
+#### 6.2.4 main 和测试子模块（Main and Test Submodules）
+
+下面的”cake.rkt“的变体包含一个 调用 print-cake 的 main 子模块:
+
+```
+"cake.rkt"
+```
+```
+#lang racket
+
+(define (print-cake n)
+    (show "   ~a   " n #\.)
+    (show " .-~a-. " n #\|)
+    (show " | ~a | " n #\space)
+    (show "---~a---" n #\-))
+
+(define (show fmt n ch)
+    (printf fmt (make-string n ch))
+    (newline))
+
+(module* main #f
+    (print-cake 10))
+```
+
+运行一个模块不会运行它 module* 定义的子模块。尽管如此，通过 racket 和 DrRacket 运行上面的模块会打印带用10根蜡烛的蛋糕，因为 main 子模块是一个特例。
+
+当模块当作程序名提供给 racket 执行器或直接在 DrRacket 内运行，如果该模块有一个 main 子模块，在外围模块加载后子模块会被执行。因此当想直接执行一个模块时，定义一个指定额外执行动作的 main 子模块，而不是作为库导入进一个更大的程序。
+
+main 子模块不必非得用 module* 声明。如果 main 模块不需要使用外围模块的绑定，它可以用 module 声明。更常见的是，main 用 module+ 声明：
+
+```
+(module+ name-id
+    decl ...)
+```
+
+module+ 定义的子模块就像用 #f 作为 initial-module-path 的 module* 定义的子模块。另外，多个 module+ 可以指定同一个子模块名，这种情况下，module+ 形式的模块体被合并起来创建一个单独的子模块。
+
+module+ 这种合并的行为对定义 test 子模块特别有用，这样可以方便地被 *raco test* 以同 main 一样的方式运行。比如，下面的"physics.rkt" 模块导出了函数 drop 和 to-energy，并且定义了一个 test 模块来进行测试:
+
+```
+"physics.rkt"
+```
+```
+#lang racket
+(module+ test
+    (require rackunit)
+    (define ε 1e-10))
+
+(provide drop
+         to-energy)
+
+(define (drop t)
+    (* 1/2 9.8 t t))
+
+(module+ test
+    (check-= (drop 0) 0 ε)
+    (check-= (drop 10) 490 ε))
+
+(define (to-energy m)
+    (* m (expt 299792458.0 2)))
+
+(module+ test
+    (check-= (to-energy 0) 0 ε)
+    (check-= (to-energy 1) 9e+16 1e+15))
+```
+
+如果该模块被编译，导入"physics.rkt"到一个更大的程序不执行 drop 和 to-energy 的测试，甚至不出发加载测试代码。但是在命令行执行 *raco test physics.rkt* 将会执行测试。
+
+上面的"physics.rkt"等价于使用 module*：
+
+```
+"physics.rkt"
+```
+```
+#lang racket
+(provide drop
+         to-energy)
+
+(define (drop t)
+    (* 1/2 49/5 t t))
+
+(define (to-energy m)
+    (* m (expt 299792458 2)))
+
+(module* test #f
+    (require rackunit)
+    (define ε 1e-10)
+    (check-= (drop 0) 0 ε)
+    (check-= (drop 10) 490 ε)
+    (check-= (to-energy 0) 0 ε)
+    (check-= (to-energy 1) 9e+16 1e+15))
+```
+
+使用 module+ 代替 module* 允许 test 分散在函数定义处。
+
+module+ 的合并行为有时对 main 模块同样有用。就算不必合并时，凭(module+ main .... )比(module* main #f)更可读，它应该也是首选写法。
+
+### 6.3 模块路径
+
+模块路径，被作为 require 和 initial-module-path 处使用，是一个模块的参考。它是下面集中形式中的一种：
+
+- \(quote id\)
+
+引号标识符的模块路径使用标识符指向一个非文件模块。这种模块形式的用法大多在 REPL 使用。
+
+例如:
+
+```
+> (module m racket
+    (provide color)
+    (define color "blue"))
+> (module n racket
+    (require 'm)
+    (printf "my favorite color is ~a\n" color))
+> (require 'n)
+my favorite color is blue
+```
+
+- rel-string
+
+模块地址字符串是一个 unix 风格的相对地址(/ 是路径分割符、.. 指向父级目录、. 指向当前目录)。rel-string 不能是以路径分割符开头或结尾。如果路径没有后缀，会自动加上".rkt"。
+
+如果有外层模块的话，路径指向外层模块，否则指向当前目录。（更准确地说，路径指向(current-load-relative-directory)的值，它指明了从哪加载文件。）
+
+Module Basics 展示了使用相对路径的例子。
+
+如果相对路径以".ss"后缀结尾，它会被装换为".rkt"。如果实现这个模块的文件实际确实以".ss"结尾，当尝试加载文件时，后缀将会被改回来（但是以".rkt"后缀为准）。这两种转换提供了与旧版本 racket 的兼容性。
+
+- id
+
+未被引用的标识符模块路径，指向一个已安装的库。id 被约束为只能是 ASCII 字符、ASCII 数字、+、-、_、和 /，这里的 / 用来分割标识符中的路径元素。这些元素指向集合和子集合，而不是目录和子目录。
+
+这种形式的一个例子是 racket/date。它指向一个在”racket.rkt“集合中，源码地址为”date.rkt“的文件，它作为 racket 的一部分被安装。".rkt"后缀会被自动加上。
+
+这种形式的另一个例子是 racket，它通常被用于初始导入。racket 是 racket/main 的缩写。当 id 没有 /，那么 /main 会自动被加到结尾。因此，racket 和 racket/main 都指向在”racket“集合中，源码为”main.rkt“的文件。
+
+例如：
+
+```
+> (module m racket
+    (require racket/date)
+    
+    (printf "Today is ~s\n"
+        (date->string (seconds->date (current-seconds)))))
+> (require 'm)
+Today is "Monday, November 18th, 2019"
+```
+
+当有以”.rkt“结尾的模块的路径，如果没有这个文件，但是存在”.ss“后缀的文件，那么会自动换为".ss"后缀。这种转换提供了与旧版本 racket 的兼容。
+
+- \(lib rel-string\)
+
+就像一个未加引号的标识符路径，但是以字符串而非标识符表示。此外，rel-string 可以以文件后缀结尾，在这种情况下，”.krt“不会被自动添加。
+
+包含(lib "racket/date.rkt")和(lib "racket/date")的这种形式的例子，等价于 racket/date。其它包含(lib "racket")、(lib "racket/main")和(lib "racket/main.rkt")的例子，等价于 racket。
+
+例子：
+
+```
+> (module m (lib "racket")
+    (require (lib "racket/date.rkt"))
+    
+    (printf "Today is ~s\n"
+            (date->string (seconds->date (current-seconds)))))
+> (require 'm)
+Today is "Monday, November 18th, 2019"
+```
+
+(plant id)
+
+访问部署在 PlaneT server 上的第三方库。该库在背需要时第一时间下载，之后便使用本地拷贝。
+
+该 id 编码由 / 分割的几条信息：包所有者，带可选版本信息的包名和包指定库的可选路径。就像像 id 作为一个库路径的缩写，”.rkt“后缀会被自动加上，并且没有子路径元素 /main 会自动加上。
+
+例子:
+
+```
+> (module m (lib "racket")
+    ; Use "schematics"'s "random.plt" 1.0, file "random.rkt":
+    (require (planet schematics/ramdom:1/random))
+    (display (random-gaussian)))
+> (require 'm)
+0.9050686838895684
+```
+
+与其他形式一样，如果没有用“.rkt”结尾的实现文件，则可以自动替换以“.ss”结尾的实现文件。
+
+- (planet package-string)
+
+就像 planet 的符号形式，但是使用字符串代替标识符。此外，当”.rkt“没有添加的时候，package-string 可以带文件后缀。
+
+与其他形式一样，如果没有用“.rkt”结尾的实现文件，则可以自动替换以“.ss”结尾的实现文件。
+
+```
+(planet rel-string (user-string pkg-string vers ...))
+
+  vers = nat
+       | (nat nat)
+       | (= nat)
+       | (+ nat)
+       | (- nat)
+```
+
+一个更通用的形式来访问来自PLaneT server上的库。在这个通用形式，PLaneT 引用像基于相对地址的库的引用一样，但是地址后面跟了生产者，包，版本的信息。这个制定的包在需要时下载和安装。
+
+当版本号是一个非负的整数序列，vers 指定该包可使用版本的约束。如果没有提供约束，则任何版本都被允许。特别地，省略所有版本意味着任何版本你都可以。强烈建议至少指定一个版本。
+
+对于版本约束，纯 nat 和 (+ nat) 一个意思，这匹配 nat 或高于对应版本号。(start-nat end-nat) 匹配他们之间的数字。(= nat) 严格匹配 nat。(- nat) 匹配 nat 或更低。
+
+```
+> (module m (lib "racket")
+    (require (planet "random.rkt" ("schenatics" "random.plt" 1 0)))
+    (display (random-gaussian)))
+> (require 'm)
+0.9050686838895684
+```
+
+".ss" 和 ".rkt" 会像其他形式一样自动转换。
+
+- \(file string\)
+
+引用一个文件，其中string是使用当前平台惯例的相对或绝对路径。这种形式不可移植，当可移植的 rel-string 可以使用时，不应该使用它。
+
+".ss" 和 ".rkt" 会像其他形式一样自动转换。
+
+```
+(submod base element ...+)
+    base = module-path
+         | "."
+         | ".."
+ element = id
+         | ".."
+```
+
+只想 base 的子模块。submod 中的 elements 序列指定到达最终子模块的子模块名的路径。
+
+例如：
+
+```
+> (module zoo racket
+    (module monkey-house racket
+        (provide monkey)
+        (define monkey "Curious George")))
+> (require (submod 'zoo mokey-house))
+> monkey
+"Curious George"
+```
+
+在 submod 中使用"."作为 base 代表外层模块。使用 ".."作为 base 等价于使用"."后跟额外的".."。当这个形式的路径指向子模块时，等价于 (submod "." id)。
+
+使用”..“作为元素取消一个子模块步骤，能有效的引用外层模块。例如，(submod "..")指向当前模块的外层模块。
+
+```
+> (module zoo racket
+    (module monkey-house racket
+      (provide monkey)
+      (define monkey "Curious George"))
+    (module crocodile-house racket
+      (require (submod ".." monkey-house))
+      (provide dinner)
+      (define dinner monkey)))
+> (require (submod 'zoo crocodile-house))
+> dinner
+"Curious George"
+```
+
+### 6.4 导入:require
+
+导入形式用来从其他模块导入。require 可以出现在模块内部，在这种情况下，它从指定模块引进绑定到导入模块。require 形式同样可以出现在顶层，在这个情况下，它既引入绑定也实例化指定模块；这表示，如果被引入模块还没执行，reqiure会执行指定模块体的定义和表达式。
+
+一个 require 一次可以指定多个导入：
+
+```
+(require require-spec ...)
+```
+
+在一个 require 中指定多个 require-spec 基本和多次 require 每次 require 一个一样。 两种 require 区别很小，仅限于顶层(top-level)不同:单一的 require 可以导入一个给定的标识符最多一次，而分割的 require 可以替换前一个 require 的绑定（必须都在顶层中(top-level)并且在模块外）。
+
+被允许的 require-spec 形式是递归定义的：
+
+```
+module-path
+```
+
+最简单的形式，一个 require-spec 是一个 module-path(就像前一章定义的那样)。在这种情况下，被 require 引入的绑定决定于 module-path 指向的模块的 provide 声明。
+
+例子：
+
+```
+> (module m racket
+    (provide color)
+    (define color "blue"))
+> (module n racket
+    (provide size)
+    (define size 17))
+> (require 'm 'n)
+> (list color size)
+'("blue" 17)
+```
+
+```
+(only-in require-spec id-may-be-renamed ...)
+
+  id-may-be-renamed = id
+                    | [orig-in bind-id]
+```
+
+only-in 形式限制将要被基础 require-spec 引入的绑定的集合。此外，only-in 可选择重命名每一个绑定：在 \[orig-id bind-id\]形式中，orig-id 指向被 require-spec 导入的绑定，bind-id 是在导入上下文中取代 orig-id 将要被导入的名字。
+
+例子:
+
+```
+> (module m (lib "racket")
+    (provide tastes-great?
+             less-filling?)
+    (define tastes-great? #t)
+    (define less-filling? #t))
+> (require (only-in 'm tastes-great?))
+> tastes-great?
+#t
+> less-filling?
+less-filling?: undefined;
+ cannot reference an identifier before its definition
+  in module: top-level
+> (require (only-in [less-filling? lite?]))
+> lite?
+#t
+```
+
+```
+(except-in require-spec id ...)
+```
+
+这种形式是 only-in 的补充：它从指定集合中排查特定的绑定。
+
+```
+(rename-in require-spec [orig-id bind-id] ...)
+```
+
+这个形式向 only-in 一样支持重命名，但是保留 require-spec 中未作为 orig-id 提到的标识符。
+
+```
+(prefix-in prefix-id require-spec)
+```
+
+这是重命名的简写，prefix-id 被添加到 require-spec 指定的标识符的前面。
+
+only-in、except-in、rename-in 和 prefix-in 形式可以嵌套以实现被导入的绑定更复杂的操作。比如：
+
+```
+(require (prefix-in m: (except-in 'm ghost)))
+```
+
+导入 m 导出的所有绑定，除了 ghost 绑定，并且本地的名字都会加上 m: 前缀。
+
+等价地，prefix-in 可以被应用到 except-in 之前：
+
+```
+(require (except-in (prefix-in m: 'm) m:ghost))
+```
+
+### 6.5 导出:provide
 
