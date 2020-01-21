@@ -4895,10 +4895,56 @@ define-values: assignment disallowed;
 
 ### 6.7 模块和宏（Modules and Macros）
 
+racket 的模块系统与 racket 的宏紧密合作，为 racket 增加了新的语法形式。比如，以导入 racket/base 为 require 和 lambda 引入语法相同，导入其他模块可以引入新的语法形式（除了更传统的导入类型，比如函数和常量）。
 
+我们之后会介绍更多宏的细节，但是这里有一个简单的例子，有关定义一个基于模式（pattern-based）的宏的模块：
 
+```
+(module noisy racket
+    (provide define-noisy)
+    
+    (define-syntax-rule (define-noisy (id arg ...) body)
+        (define (id arg ...)
+            (show-argments 'id (list arg ...))
+            body))
+    
+    (define (show-argments name args)
+        (printf "call ~s with argments ~e" name args)))
+```
 
+被模块提供的 define-noisy 绑定是一个宏，它扮演的角色类似于 define 之于 函数,但是它造成函数的每次调用都打印函数的参数：
 
+```
+> (require 'noisy)
+> (define-noisy (f x y)
+    (+ x y))
+> (f 1 2)
+calling f with argments '(1 2)
+3
+```
+
+大致上，define-noisy 形式就是把
+
+```
+(define-noisy (f x y)
+    (+ x y))
+```
+
+替换为
+
+```
+(define (f x y)
+    (show-argments 'f (list x y))
+    (+ x y))
+```
+
+由于 show-argments 没有被 noisy 模块提供，因此这里的文本替换并不完全正确。实际的替换会正确地跟踪标识符（如show-argments）的来源，因此它们可以在定义宏的位置引用其他定义，即使这些标识符在使用宏的位置不可用。
+
+宏和模块i的交互远不止标识符绑定。defined-syntax 形式本身就是一个宏，它展开成编译时代码(实现从 define-noisy 到 define 的转换)。模块系统跟踪哪些代码需要在编译时运行，那些代码正常运行。
+
+## 7 合约(Contracts)
+
+本章对 racket 的合约系统做简单介绍。
 
 
 
