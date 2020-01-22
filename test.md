@@ -5023,6 +5023,21 @@ calling f with argments '(1 2)
     (+ amount 10))
 ```
 
+这里的每个模块和合约都使用 module+ 包围。module 后的第一个形式是要在随后的 require 语句中使用的名称（通过 reuire 的每个引用都以 ".." 作为前缀）。
+
+#### 7.1.3 试验嵌套合约边界（Experimenting with Nested Contract Boundaries）
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
