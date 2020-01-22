@@ -5027,6 +5027,22 @@ calling f with argments '(1 2)
 
 #### 7.1.3 试验嵌套合约边界（Experimenting with Nested Contract Boundaries）
 
+在许多情况下，在模块边界附加合约是有意义的。这十分方便，然而，能够比模块更细力度的使用合约。define/contract 形式可以这样使用：
+
+```
+#lang racket
+
+(define/contract amount
+    (and/c number? positive?)
+    150)
+
+(+ amount 10)
+```
+
+在这个例子中，define/contract 形式在 amount 的定义和它所在的上下文中建立合约。换句话说，这里合约的双方是定义和包含定义的模块。
+
+
+
 
 
 
