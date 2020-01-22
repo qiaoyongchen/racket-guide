@@ -4952,16 +4952,76 @@ calling f with argments '(1 2)
 
 合同从而在双方之间确定了一个边界。无论何时，当一个值越界，合约监控系统执行检查，确保对方遵守已确定的合约。
 
-本着这种精神，racket 鼓励在模块边界签订合约。
+本着这种精神，racket 鼓励在模块边界签订合约。具体来说，程序员可以通过合约来提供条款，从而对导出值的使用添加约束和承诺。比如，导出规范
 
+```
+#lang racket
 
+(provide (contract-out [amount positive?]))
 
+(define amount ...)
+```
 
+对上述模块的所有调用端许诺 amount 的值总是一个正数。合约系统会仔细监控模块。每当一个调用方指向amount，监视器都会检查 amount 的值的确是一个正数。
 
+合约库已经被内置到 rackt 语言中，但是如果你想使用 racket/base 你像这样可以明确导入合约库:
 
+```
+#lang racket/base
+(require racket/contract) ; now we can write contracts
 
+(provide (contract-out [amount positive?]))
 
+(define amount ...)
+```
 
+#### 7.1.1 Contract Violations (合约违规)
+
+如果我们绑定 amount 到一个非正数，
+
+```
+#lang racket
+
+(provide (contract-out [amount positive?]))
+
+(define amount 0)
+```
+
+那么当这个模块被导入时，监控系统会发出合同的违规信号，并责怪模块违背了约定。
+
+一个更大的错误，绑定 amount 到一个非数值值：
+
+```
+#lang racket
+
+(provide (contract [amount positive?]))
+
+(define amount 'amount)
+```
+
+在这种情况下，监视系统会对一个符号使用 positive?,但是 positive? 报告一个错误，因为它的域只是数字。为了使合约捕获我们所有 racket 的值的意图，我们可以使用 and/c 组合两个合约来确保这个值既是数字也是正的。
+
+```
+(provide (contract-out [amount (and/c number? positive?)]))
+```
+
+#### 7.1.2 试验合约和模块（Experimenting with Contracts and Modules）
+
+这章中的合约和模块（不包括下面那些）都是使用标准 #lang 语法来描述模块的。由于模块是合同双方之间的边界，因此例子涉及多个模块。
+
+为了实验单个模块中的多个模块或者 DrRacket 的定义区，我们使用 racket 的子模块。例如，尝试本章前面的示例，就像这样：
+
+```
+#lang racket
+
+(module+ server
+    (provide (contract-out [amount (and/c number? positive?)]))
+    (define amount 150))
+
+(module+ main
+    (require (submod ".." server))
+    (+ amount 10))
+```
 
 
 
