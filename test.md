@@ -5041,14 +5041,75 @@ calling f with argments '(1 2)
 
 在这个例子中，define/contract 形式在 amount 的定义和它所在的上下文中建立合约。换句话说，这里合约的双方是定义和包含定义的模块。
 
+创建这些嵌套合约边界的形式有时很难使用，因为可能会产生意想不到的性能影响。
 
+### 7.2 函数的简单合约（Simple Contracts on Functions）
 
+数学函数有域和范围。域指定函数可接受为参数的值的类型，范围指定它生成的值的类型。带域和范围的描述函数的传统的符号是这样
 
+```
+f : a -> B
+```
 
+这里的 A 是函数的域，B 是范围。
 
+编程语言的汗是同样有域和范围，并且合约可以确保函数接受只在其域之内的值，只生成在其范围之内的值。A -> 为函数创建这样一个合约。-> 后面的形式指定这个域的合约和最终范围的合约。
 
+这里有一个表示银行账户的模块：
 
+```
+#lang racket
 
+(provide (constract-out
+          [deposit (-> number? any)]
+          [balance (-> number?)]))
+
+(define amount 0)
+(define (desposit a) (set! amount (+ amount a)))
+(define (balance) amount)
+```
+
+该模块导出两个函数：
+
+- deposit, 接受一个数字并返回一些在合约中未被指定的值
+
+- balance, 返回一个数字指定账户的当前余额
+
+当模块到处函数时，它在它自己作为服务器和导入函数作为客户端之间建立两个通信通道。如果客户端模块调用该函数，它就会发送值到服务端模块。相对的，如果这个函数调用完，该函数会返回值，服务端模块发送值返回到客户端模块。这个客户端-服务端区别是重要的，因为当发生错误时，一方或另一方会被阻挠。
+
+如果客户端使用 'millions 调用 deposit，它就会违反合约。合约监控系统将会捕捉这次违例并且责备客户端打破了关于上述模块的合约。相反的，如果 balance 返回 'broke，合约监控系统将会责备服务端模块。
+
+-> 自身不是合约，它是合约连接符，它组合其它合同为一个合同。
+
+#### 7.2.1 -> 的形式
+
+如果你习惯于数学函数，你可能喜欢箭头出现在域和范围之间，而不是在开头。如果你已经阅读 How to Design Programs，你已经看到很多次了。的确，你可能看过许多其他人的代码里的这样的合同。
+
+```
+(provide (contract-out
+          [desposit (number? . -> . any)]))
+```
+
+如果 racket 的 S-表达式 包含两个点之间带一个符号，读取器会重新组合这个 s-表达式，把符号放在开头。
+
+```
+(number? . -> . any)
+```
+
+只是另一种书写方式
+
+(-> number? any)
+
+#### 7.2.2 使用 define/contract 很 ->
+
+在 Experimenting with Nested Contract Boundaries 中介绍的 define/contract 同样可以用于定义来自合同的函数。比如，
+
+```
+(define/contract (desposit amount)
+    (-> number? any)
+    ; implementation goes here
+    ....)
+```
 
 
 
