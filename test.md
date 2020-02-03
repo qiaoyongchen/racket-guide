@@ -5119,7 +5119,7 @@ f : a -> B
 
 #### 7.2.3 any 和 any/c
 
-
+用于 desposit 的 any 合约
 
 
 
