@@ -5100,7 +5100,7 @@ f : a -> B
 
 (-> number? any)
 
-#### 7.2.2 使用 define/contract 很 ->
+#### 7.2.2 使用 define/contract 和 ->
 
 在 Experimenting with Nested Contract Boundaries 中介绍的 define/contract 同样可以用于定义来自合同的函数。比如，
 
