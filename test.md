@@ -4994,7 +4994,7 @@ calling f with argments '(1 2)
 ```
 #lang racket
 
-(provide (contract [amount positive?]))
+(provide (contract-out [amount positive?]))
 
 (define amount 'amount)
 ```
@@ -5119,7 +5119,33 @@ f : a -> B
 
 #### 7.2.3 any 和 any/c
 
-用于 desposit 的 any 合约
+用于 desposit 的 any 合约匹配任何种类的结果，并且它只可以用于函数合约的范围处。我们可以使用更具体的合约 void? 来取代上面的 any，这表明函数总是返回 (void) 值。然而，void? 合约会请求合约监控系统每当函数被调用时检查返回值，虽然调用端模块并不能对该值做什么处理。相反，any 告诉监控系统不要检查返回值，它告诉调用端：服务端模块对函数的返回值不做一丁点的承诺，甚至不保证是单一值还是多值。
+
+any/c 合约和 any 类似，因此它对值没有要求。但是不同于 any，any/c 表示一个单一值，并且适合当作参数合约使用。当作范围合约使用 any/c 会强加一个函数产生单一值的检查。
+
+```
+(-> integer? any)
+```
+
+描述了函数接受一个整数并且返回任何数量的值，而
+
+```
+(-> integer? any/c)
+```
+
+描述了函数接受一个整数并且返回一个单一值(但是没有说有关这个值的任何事)。函数
+
+```
+(define (f x) (values (+ x 1) (- x 1)))
+```
+
+可以匹配(-> integer? any)，但是不能匹配(-> integer? any/c)。
+
+当从函数许诺一个单一结果特别重要时，使用 any/c。当你希望尽可能少的许诺函数结果（尽可能少的检查）时,使用 any。
+
+#### 7.2.4 定义你自己的合约（Rolling Your Own Contracts）
+
+
 
 
 
