@@ -4111,7 +4111,7 @@ person: bad name: 10
     (newline))
 ```
 
-那么，其他模块可以导入“cake.rkt”使用 print-cake 函数，因为“cake.rkt”中provide 那行明确地导出了 print-cake 的定义。show 函数是”cake.rkt“私有的(即它不能被其他模块使用)，因为 show 函数没有被到处。
+那么，其他模块可以导入“cake.rkt”使用 print-cake 函数，因为“cake.rkt”中provide 那行明确地导出了 print-cake 的定义。show 函数是”cake.rkt“私有的(即它不能被其他模块使用)，因为 show 函数没有被导出。
 
 下面的”random-cake.rkt“模块引入了”cake.rkt“：
 
@@ -4132,7 +4132,7 @@ person: bad name: 10
 
 ”cake.rkt“和”random-cake.rkt“例子最常用的方式来组织模块中的程序：把所有模块文件放在单一目录（可能有子目录），然后通过相对路径持有彼此的模块引用。因为该单一目录可以在文件系统上移动或复制到其他机器上，相对路径保存模块间的联系，所以这些模块的目录可以当成一个项目。
 
-另个程序，假如你正在创建糖果分类的程序，你可能需要一个使用其他模块访问数据库并且控制分类程序的”sort.rkt“模块。如果这个糖果数据库模块本身已被组织进处理条形码和制造商信息的子模块，那么数据库模块可以是“db/lookup.rkt”，它使用帮助模块“db/barcodes.rkt”和“db/makers.rkt”。类似地，分类程序驱动”machine/control.rkt“可以使用帮助模块”machine/sensors.rkt“和”machine/actuators.rkt“。
+另一个程序，假如你正在创建糖果分类的程序，你可能需要一个使用其他模块访问数据库并且控制分类程序的”sort.rkt“模块。如果这个糖果数据库模块本身已被组织进处理条形码和制造商信息的子模块，那么数据库模块可以是“db/lookup.rkt”，它使用帮助模块“db/barcodes.rkt”和“db/makers.rkt”。类似地，分类程序驱动”machine/control.rkt“可以使用帮助模块”machine/sensors.rkt“和”machine/actuators.rkt“。
 
 ![xxx](https://docs.racket-lang.org/guide/pict.png "optional title")
 
@@ -4181,7 +4181,7 @@ racket sort.rkt
 raco make sort.rkt
 ```
 
-来进行编译”sort.rkt“和所有它的依赖为字节码文件。运行 *racket sort.rkt* 时，当字节码存在会自动使用字节码。
+来进行编译”sort.rkt“和所有它的依赖为字节码文件。当运行 *racket sort.rkt* 时，字节码存在会自动使用字节码。
 
 #### 6.1.2 库集合（Library Collections）
 
@@ -4229,7 +4229,7 @@ racket 程序不直接引用包。取而代之的是，程序通过集合引用�
 
 回看组织模块那节的糖果分类的例子，假设”db/“和”machine/“模块需要共同的帮助函数的集合。帮助函数可以放进”utils/“目录，那么”db/“和”machine/“中的模块可以可以通过以”../utils/“开头的相对路径访问工具模块。只要一组模块在单个目录中协同工作，最好坚持使用相对路径。程序员可以在不知道 racket 配置的情况下跟踪相对路径的引用。
 
-有些库需要跨多个项目被使用，因此将库源码保存在它使用的目录不符合场景。在这种情况下，最好的建议是添加一个新的集合。当该库在一个集合了之后，它可以使用不带引号的地址来引用，就那些 racket 发行版中包含的库一样。
+有些库需要跨多个项目被使用，因此将库源码保存在它使用的目录不符合场景。在这种情况下，最好的建议是添加一个新的集合。当该库在一个集合了之后，它可以使用不带引号的地址来引用，就像那些 racket 发行版中包含的库一样。
 
 你可以通过把文件放到 racket 安装目录或者通过(get-collects-search-dirs)报告出来的目录出来新增一个集合。或者你添加到通过设置 PLTCOLLECTS 环境变量的目录列表。然而，最好的建议是添加一个包。
 
@@ -4554,7 +4554,7 @@ Today is "Monday, November 18th, 2019"
 
 - \(lib rel-string\)
 
-就像一个未加引号的标识符路径，但是以字符串而非标识符表示。此外，rel-string 可以以文件后缀结尾，在这种情况下，”.krt“不会被自动添加。
+就像一个未加引号的标识符路径，但是以字符串而非标识符表示。此外，rel-string 可以以文件后缀结尾，在这种情况下，”.rkt“不会被自动添加。
 
 包含(lib "racket/date.rkt")和(lib "racket/date")的这种形式的例子，等价于 racket/date。其它包含(lib "racket")、(lib "racket/main")和(lib "racket/main.rkt")的例子，等价于 racket。
 
@@ -4570,7 +4570,7 @@ Today is "Monday, November 18th, 2019"
 Today is "Monday, November 18th, 2019"
 ```
 
-(plant id)
+- (plant id)
 
 访问部署在 PlaneT server 上的第三方库。该库在背需要时第一时间下载，之后便使用本地拷贝。
 
@@ -5144,6 +5144,56 @@ any/c 合约和 any 类似，因此它对值没有要求。但是不同于 any�
 当从函数许诺一个单一结果特别重要时，使用 any/c。当你希望尽可能少的许诺函数结果（尽可能少的检查）时,使用 any。
 
 #### 7.2.4 定义你自己的合约（Rolling Your Own Contracts）
+
+函数 deposit 把给定的数值加到 amount 值上。虽然函数合约防止调用端使用非数值调用该函数，但是合约依然允许调用端使用复数、负数或者不精确数值调用，他们都不能合理的代表钱的数额。
+
+合约系统允许程序员通过函数定义自己的合约：
+
+```
+#lang racket
+
+(define (amount? a)
+    (and (number? a) (integer? a) (exact? a) (>= a 0)))
+
+(provide (contract-out
+          ; an amount is a natural number of cents
+          ; is the given number an amount?
+          [deposit (-> amount? any)]
+          [amount? (-> any/c boolean?)]
+          [balance (-> amount?)]))
+
+(define amount 0)
+(define (despost a) (set! amount (+ amount a)))
+(define (balance) amount)
+```
+
+该模块定义了一个 amount? 函数并且用 -> 将它作为一个合约使用。当调用端调用与合约 (-> amount? any) 一起导出的 deposit 函数，它必须提供一个精确的，非负数的整数，否则 amount? 则会被应用到该参数并返回 f#，这会出发合约监控系统组织该客户端。类似地，服务端也会提供一个准确的，非负整数作为 balance 的值，以保持正确无误。
+
+当然，将通信通道限制为调用端不理解的值是没有意义的。因此，服务方还应该到处 amount? 谓词本身，该合约表示它接收任意值并返回一个 boolean 值。
+
+这种情形下，我们也可以使用 natural-number/c 代替 amount?，因为它表示完全一样的检查：
+
+```
+(provide (contract-out
+          [deposit (-> natural-number/c any)]
+          [balance (-> natural-number/c)]))
+```
+
+每个接受单一参数的函数都可以被看出一个谓词并且作为一个合约使用。然而，组合已存在的谓词成一个新谓词，比如 and/c 或 or/c 通常很有用，下面就是生成上面合约的另一种方式：
+
+```
+(define amount/c
+    (and/c number? integer? exact? (or/c positive? zero?)))
+
+(provice (contract-out
+          [deposit (-> amount/c any)]
+          [balance (-> amount/c)]))
+```
+
+值也可以作为合约提供双重职责。例如，如果函数接受一个数字或 #f，那么 (or/c number? #f) 就可以了。类似地，amount/c 合约可以被写为用 0 代替 zero?。如果使用正则表达式作为合约，那么该合约接受匹配该正则表达式的字符串和字节串。
+
+自然，你可以通过组合，组合你拥有的实现合约的函数，就像 and/c。下面是一个从银行记录创建字符串的模块：
+
 
 
 
