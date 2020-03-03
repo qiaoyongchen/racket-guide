@@ -5194,9 +5194,71 @@ any/c 合约和 any 类似，因此它对值没有要求。但是不同于 any�
 
 自然，你可以通过组合，组合你拥有的实现合约的函数，就像 and/c。下面是一个从银行记录创建字符串的模块：
 
+```
+#lang racket
 
+(define (has-decimal? str)
+    (define L (string-length str))
+    (and (>= L 3)
+        (char=? #\. (string-ref str (- L 3)))))
 
+(provide (contract-out
+          ; covert a random number to a string
+          [format-number (-> number? string?)]
+          
+          ; convert an amount into a string with a decimal
+          ; point, as in an amount of US currrency
+          [format-nat (-> natural-number/c
+                          (and/c string? has-decimal?))]))
+```
 
+被导出的函数 format-number 的合约说明了，它处理一个数字并返回一个字符串。被导出函数 format-nat 的合约比 format-number 更有趣。它只消耗一个自然数。它的范围合约许诺是一个从右起第三个位置处带有 . 的字符串。
 
+如果我们希望加强 format-nat 范围合约的许诺，以致成为只允许带数字和点的字符串，我们可以这样写：
 
+```
+#lang racket
+
+(define (digit-char? x)
+    (number x '(#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0)))
+
+(define (has-decimal? str)
+    (define L (string-length str))
+    (and (>= L 3)
+        (char=? #\. (string-ref str (- L 3)))))
+
+(define (is-decimal-string? str)
+    (define L (string-length str))
+    (and (has-decimal? str)
+        (andmap digit-char?
+            (string->list (substring str 0 (- L 3))))
+        (andmap digit-char?
+            (string->list (substring str (- L 2) L)))))
+
+...
+
+(provide (contract-out
+          ....
+          ; convert an amount (natural number) of cents
+          ; into a dollor-base string
+          [format (-> natural-number/c
+                      (and/c string?
+                             is-decimal-string?))]))
+```
+
+或者，在这种情况下，我们可以使用正则表达式作为合约:
+
+```
+#lang racket
+
+(provide
+    (contract-out
+     ...
+     ; convert an amount (natural number) of cents
+     ; into a dollar-based string
+     [format-nat (-> natural-number/c
+                     (and/c string? #rx"[0-9]*\\.[0-9][0-9]"))]))
+```
+
+#### 7.2.5 关于高阶函数的合约 (Contracts on Higher-order Functions)
 
