@@ -5326,7 +5326,7 @@ deposit: contract violation
     (define (depsoit a) (set! total (+ a total))))
 ```
 
-通过这些小小的改变，错误信息变得贴别可读：
+通过这些小小的改变，错误信息变得特别可读：
 
 ```
 > (require 'improved-bank-server)
@@ -5343,3 +5343,146 @@ deposit: contract violation
 ```
 
 #### 7.2.7 剖析合约错误信息
+
+通常，合约错误信息由六个部分组成:
+
+- 合约相关连的方法或函数，以及取决于服务端还是客户端“合同违约”的短语，例如，上面的示例:
+
+```
+deposit: contract violation
+```
+
+- 被违约合约的确切描述
+
+```
+expected: amount
+given: -10
+```
+
+- 完整的合约及其路径，显示哪一方面违约，
+
+```
+in: the 1st argment of
+(-> amount any)
+```
+
+- 合约放置的模块（或者，更一般的说，合约调用的边界）
+
+```
+contract from: improved-bank-server
+```
+
+- 阻止方
+
+```
+blaming: top-level
+(assuming the contract is correct)
+```
+
+- 合约发生时的源码定位
+
+```
+at: eval:5.0
+```
+
+### 7.3 通用函数合约
+
+-> 合约构造器服务于接受固定数量参数函数，并且生成的合约不依赖输入参数。为了支持其他形式的函数，Racket 提供了额外的合约构造器，尤其是 ->* 和 ->i。
+
+#### 7.3.1 可选参数
+
+看一下这个摘选自字符串处理模块的片段：
+
+```
+# lang racket
+
+(provide
+    (contract-out
+     ; pad the given str left and right with
+     ; the (optional) char so that it is centered
+     [string-pad-center (->* (string? natural-number/c)
+                             (char?)
+                             string?)]))
+(define (string-pad-center str width [pad #\space])
+    (define field-width (min width (string-length str)))
+    (define rmargin (ceiling (/ (- widht field-width) 2)))
+    (define lmargin (floor (/ (- width field-width) 2)))
+    (string-append (build-string lmargin (λ (x) pad))
+                   str
+                   (build-string rmargin (λ (x) pad))))
+```
+
+该模块导出 string-pad-center,这是通过给定宽度和给定字符串生成字符串的函数。默认填充的是 #\space，如果客户端希望使用不同的字符，可以在调用 string-pad-center 传入第三个参数，一个字符，用来覆盖默认字符。
+
+使用可选参数定义的函数，对此类功能很合适。这里有趣的是对于 string-pad-center 合约的制定。
+
+合约组合器 ->*，需要几组合约：
+
+- 首先是括号扩起来的一组所有必须参数。在这个例子中，我们看到的是这两个：string? 和 natural-number/c。 
+
+- 第二组是括号扩起来的一组所有可选参数：char?。
+
+- 最后是一个单独的合约：函数的返回值。
+
+值得注意的是如果默认值不满足合约，你不会获取到合约的错误。如果你不相信你获取的是正确的初始化值，你需要跨边界传递初始值。
+
+#### 7.3.2 剩余参数（rest arguments）
+
+max 操作处理至少一个实数，但是它接口任何数量的额外参数。你也可以通过 rest argument 写出其他诸如此类的函数，比如 max-abs：
+
+```
+(define (max-abs n . rst)
+    (foldr (lambda (n m) (max (abs n) m)) (abs n) rst))
+```
+
+在合约中通过 ->* 的进一步扩展来描述这个函数： #:rest 关键字在必须参数和可选参数后指定一个参数列表。
+
+```
+(provide
+    (contract-out
+     [max-abs (->* (real?) () #:rest (listof real?) real?)]))
+```
+
+对于 ->*，必选参数总是在第一个括号对中，对于这个例子是一个单独的实数。空括号对表示没有可选参数（不算剩余参数）。合约的剩余参数跟在 #:rest 后面，因为所有的剩余参数必须是实数，所以，剩余参数列表必须满足合约 (listof real?)。
+
+#### 7.3.3 关键字参数
+
+-> 合约构造器总也支持关键字参数。比如，考虑这个函数，它创建一个简单的 GUI 并且询问用户 yes-or-no 问题：
+
+```
+#lang racket/gui
+(define (ask-yes-or-no-question question
+                                #:default answer
+                                #:title title
+                                #:width w
+                                #:height h)
+    (define d (new dialog% [label title] [widht w] [height h]))
+    (define msg (new message% [label question] [parent d]))
+    (define (yes) (set! answer #t) (send d show #f))
+    (define (no) (set! answer #f) (send d show #f))
+    (define yes-b (new button% 
+                       [label "yes"] [parent d]
+                       [callback (λ (x y) (yes))]
+                       [style (if answer '(border) '())]))
+    (define no-b (new button%
+                      [label "No"] [parent d]
+                      [callback (λ (x y) (no))]
+                      [style (if answer '() '(border))]))
+    (send d show #t)
+    answer)
+(provide (contract-out
+          [ask-yes-or-no-question
+           (-> string?
+               #:default boolean?
+               #:title string?
+               #:width exact-interger?
+               #:height exact-interger?
+               boolean?)]))
+```
+
+ask-yes-or-no-question 合约使用了 ->，lambda （或者基于define定义的函数）允许关键字位于形式参数之前，同样的，-> 允许关键字位于函数合约的参数合约之前。在这里，合约表示 ask-yes-or-no-question 必须接受四个关键字参数，分别是 #:default，#:title，#:width 和 #:height。在函数定义中，-> 中参数之间的相对顺序对于调用端没什么关系，只有在没有关键字的时候相对顺序才有意义。
+
+#### 7.3.4 可选的关键字参数 （Optional Keyword Arguments）
+
+
+
