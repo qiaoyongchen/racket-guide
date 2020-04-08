@@ -5718,19 +5718,71 @@ split 函数使用字节列表并返回遇到的第一个 #\newline 之前的字
                       (value string? (listof char?)))]))
 ```
 
-就像之前一样，使用 ->* 的参数的合约被一对额外的括号包围（必须总是像这样包围），空括号对表示这里没有可选参数。结果合约里有 values:一个字符串和一个字节数组。
+就像之前一样，使用 ->* 的参数的合约被一对额外的括号包围（必须总是像这样包围），空括号对表示这里没有可选参数。结果合约里有 values:一个字符串和一个字节列表。
 
+现在假设，我们总是想确保 split 的第一个结果是一个给定单词的前缀。因此，我们使用 ->i 合约组合器：
 
+```
+(define (substring-of? s)
+  (flat-named-contract
+    (format "substring of ~s" s)
+    (lambda (s2)
+      (and (string? s2)
+           (<= (string-length s2) (string-length s))
+           (equal? (substring s 0 (string-length s2)) s2)))))
 
+(provide
+ (contract-out
+  [split (->i ([fl (listof char?)])
+              (values [s (fl) (substring-of? (list->string fl))]
+                      [c (listof char?)]))]))
+```
 
+像 ->* 一样, ->i 组合器使用函数作用于参数来生成合约的范围。它不仅仅返回一个合约而是返回和函数结果值一样多的合约：一个合约对应一个值。在这样的情况下，第二个合约和之前的一样，确保第二个值是字符列表。另外，第一个合同强化了就合同，以便结果是给定词的前缀。
 
+#### 7.3.9 Fixed but Statically Unknown Arities
 
+想象一下，你正准备写一个函数的合约，该合约接受一些函数和一个数字列表，并将函数用于数字。除非给定函数的数量和给定列表的匹配，否则你的程序出错。
 
+考虑这个 n-step 函数:
 
+```
+; (number ... -> (union #f number?)) (listof number) -> void
+(define (n-step proc inits)
+  (let ([inc (apply proc inits)])
+    (when inc
+      (n-step proc (map (λ (x) (+ x inc)) inits)))))
+```
 
+proc 是 n-step 的参数，proc 函数，它的结果要么返回数字或者 false。然后对 inits 列表应用 proc。proc 一直返回一个数字，n-step 把这个数字看作是 inits 中每个数字的增量。当 proc 返回 false 时，这个循环即停止。
 
+这里有两个使用:
 
+```
+; nat -> nat
+(define (f x)
+  (printf "~s\n" x)
+  (if (= x 0) #f -1))
+(n-step f '(2))
 
+; nat nat -> nat
+(define (g x y)
+  (define z (+ x y))
+  (printf "~s\n" (list x y z))
+  (if (= z 0) #f -1))
+
+(n-step g '(1 1))
+```
+
+n-step 的合约必须指定 proc 两个方面的行为: 它的数量匹配 inits 中元素的数量，并且它必须要么返回数字要么返回 #f。后者容易，前者难。第一眼看上去，这似乎存在一个合约，将变量数量传给 proc:
+
+```
+(->* ()
+     #:rest (listof any/c)
+     (or/c number? false/c))
+```
+
+然而这个合约表示，函数必须接受任何任意数量的参数，并不是特定但不确定的数量。因此，
 
 
 
