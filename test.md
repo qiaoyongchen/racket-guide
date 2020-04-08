@@ -5484,5 +5484,277 @@ ask-yes-or-no-question 合约使用了 ->，lambda （或者基于define定义�
 
 #### 7.3.4 可选的关键字参数 （Optional Keyword Arguments）
 
+当然，ask-yes-or-no-question 中的许多参数（就是前一个问题）有必要拥有默认值，并使其可选:
+
+```
+(define (ask-yes-or-no-question question
+                                #:default answer
+                                #:title [title "Yes or No?"]
+                                #:width [w 400]
+                                #:height [h 200])
+ ...)
+```
+
+为了指明这个函数的合约，我们需要再次使用 ->*。它像你在可选参数和必需参数章节中希望的那样支持关键字参数。在这个例子中，我们有必须关键字参数 #:default 和可选关键字参数 #:title, #:width 和 #:height。所以我们像这样定义合约：
+
+```
+(provide (contract-out
+          [ask-yes-or-no-question
+           (->* (string?
+                 #:default boolean?)
+                 (#:title string?
+                  #:width exact-integer?
+                  #:height exact-integer?)
+                
+                 boolean?)]))
+```
+
+如上，我们把必须关键字放在第一部分，把可选关键字放在了第二部分。
+
+#### 7.3.5 case-lambda 合约
+
+使用 case-lambda 定义的函数可能会根据参数的数量，对其参数使用不同的合约。比如 report-cost 函数可能由一对数字或者字符串生成一个新字符串：
+
+```
+(define report-cost
+  (case-lambda
+    [(lo hi) (format "between $~a and $~a" lo li)]
+    [(desc) (format "~a of dollars" desc)]))
+
+> (report-cost 5 8)
+"between $5 and $8"
+> (report-cost "millions")
+"millions of dollars"
+```
+
+这样的函数的合约用 case-> 组合器形成，它组合所需的多个合约：
+
+```
+(privode (contract-out
+          [report-cost
+           (case->
+            (integer? integer? . -> . string?)
+            (string? . -> . string))]))
+```
+
+正如你所见，report-cost 合约组合两个函数合约，它正好列符合实际描述所需的子句。
+
+#### 7.3.6 参数和结果依赖 （Argument and Result Dependencies）
+
+如下是虚拟数字模块的一个节选:
+
+```
+(provide
+ (contract-out
+  [real-sqrt (->i ([argment (>=/c 1)])
+                  [result (argment) (<=/c argment)])]))
+```
+
+被导出函数 real-sqrt 的合约使用 ->i 而不是 ->* 函数合约。“i” 代表非独立合约，表示该函数的合约的范围取决于参数值。result合约那行的参数意味着该结果取决于参数。这个特别的例子中，real-sqrt 的参数大于等于1,所以基本正确的检查就是结果会小于参数。
+
+通常，依赖函数合约看起来像是更一般的 ->* 合约，只是带了可以在该合约其他地方被使用的名字。
+
+回顾下 bank-account 的例子，设想，我们组织模块以支持多用户，并且还包含了提现操作。改良版的 bank-account 模块包含 account 结构类型和以下函数：
+
+```
+(provide (contract-out
+          [balance (-> account? amount/c)]
+          [withdraw (-> account? amount/c account?)]
+          [deposit (-> account? amount/c account?)]))
+```
+
+然而，除了要求调用端提供合法的金额给提现，金额还应该小于等于指定账户的余额，并且账户的结果将比初始金额的钱要少。类似地，该模块应该保证 deposit 会生成一个加上金额的账户。下面的实现强制对合约强制实行这些限制和保证。
+
+```
+#lanng racket
+; section 1: the contract definitions
+(struct account (balance))
+(define amount/c natural-number/c)
+
+; section 2: the exports
+(provide
+ (contract-out
+  [create (amount/c . -> . account?)]
+  [balance (account? . -> . amount/c)]
+  [withdraw (->i ([acc account?]
+                  [amt (acc) (and/c amount/c (<=/c (balance acc)))])
+                 [result (acc amt)
+                         (and/c account?
+                                (lambda (res)
+                                  (>= (balance res)
+                                      (- (balance acc) amt))))])]
+  [deposit (->i ([acc account?]
+                 [amt amount/c])
+                [result (acc amt)
+                        (and/c account?
+                               (lambda (res)
+                                 (>= (balance res)
+                                     (+ (balance acc) amt))))])]))
+; section 3: the functionn definitions
+(define balance account-balaance)
+
+(define (create amt) (account amt))
+
+(define (withdraw a amt)
+  (account (- (account-balance a) amt)))
+
+(define (deposit a amt)
+  (account (+ (account-balance a) amt)))
+```
+
+第二部分的合约给 create 和 balance 提供了典型的 type-like 保护。然而，对于 withdraw 和 deposit，合约检查并提供更复杂的限制。withdraw的第二参数的合约使用 (balance acc)来检查提供的金额是否足够小，这里 acc 是 ->i 内给定函数的第一个参数的名字。withdraw 结果的合约使用 acc 和 amt 来保证提取金额不超过请求金额。deposit 合约类似的使用 acc 和 amount 在结果中保证被提供的金额被存进账户。
+
+如上所述，当合约检查失败，错误消息并不好。下面的版本使用 flat-named-contract 和帮助函数 mk-account-contract 来提供更好的错误信息。
+
+```
+#lang racket
+; section 1: the contract definitions
+(struct account (balance))
+(define amount/c natural-number/c)
+
+(define msg> "account a with balance larger than ~a expected")
+(define msg< "account a with balance less than ~a expected")
+
+(define (mk-account-contract acc amt op msg)
+  (define balance0 (balance acc))
+  (define (ctr a)
+    (and (account? a) (op balance0 (balance a))))
+  (flat-named-contract (format msg balance0) ctr))
+
+; section 2: the exports
+(provide
+ (contract-out
+  [create (amount/c . -> . account?)]
+  [balance (account? . -> . account/c)]
+  [withdraw (->i ([acc account?]
+                  [amt (acc) (and/c amount/c (<=/c (balance acc)))])
+                 [result (acc amt) (mk-account-contract acc amt >= msg>)])]
+  [deposit (->i ([acc account?]
+                 [amt amount/c])
+                [result (acc amt)
+                        (mk-account-contract acc amt <= msg<)])]))
+
+; section 3: the function definitions
+(define balance account-balance)
+
+(define (create amt) (account amt))
+
+(define (withdraw a amt)
+  (account (- (account-balance a) amt)))
+
+(define (deposit a amt)
+  (account (+ (account-balance a) amt)))
+```
+
+#### 7.3.7 检查状态改变（Checking State Changes）
+
+->i 合约组合器总是可以确保某个函数只能通过某些限制来修改状态。比如，思考下这个合约(来自 preferences:add-panel 函数)：
+
+
+```
+(->i ([parent (is-a?/c area-container-window<%>)])
+     [_ (parent)
+      (let ([old-children (send parent get-children)])
+           (λ (child)
+                (andmap eq?
+                    (append old-children (list child))
+                    (send parent get-children))))])
+```
+
+上述代码表示，函数接受一个参数，名叫 parent,并且 parent 必须是一个符合接口 area-container-window<%> 的对象。合约的范围确保函数只通过添加一个 child 到 children 列表的前面以进行修改。函数通过使用 _ 而不是正常的标识符来完成这些，他告诉合约库：合约范围不依赖任何结果的值，然后当函数被调用时（而不是在返回时），合约库执行 _ 之后的表达式。因此对于 get-children 方法的调用先于合约中函数的调用。当合约中函数返回时，它的结果作为 child 传递，合约就会确保，函数返回的 children 和 被调用之前的 children 只是在列表前面多了一个 child，其他都是相同的。
+
+看一下简单例子的关于这点的区别，思考下这个程序：
+
+```
+#lang racket
+(define x '())
+(define (get-x) x)
+(define (f) (set! x (cons 'f x)))
+(provide
+ (contract-out
+  [f (->i () [_ (begin (set! x (cons 'ctc x)) any/c)])]
+  [get-x (-> (listof symbol?))]))
+```
+
+如果我们请求这个模块，调用 f, get-x 的结果将会是 '(f ctc)。相反，如果 f 的合约是
+
+```
+(-> () [res (begin (set! x (cons 'ctc x)) any/c)])
+```
+
+（只是改为申明了 res），get-x 的结果将会是 '(ctc f)。
+
+#### 7.3.8 多结果值（Multuple Result Values）
+
+split 函数使用字节列表并返回遇到的第一个 #\newline 之前的字符串和该列表的其余部分：
+
+```
+(define (split l)
+  (define (split l w)
+    (cond
+      [(null? l) (values (list->string (reverse w)) '())]
+      [(char=? #\newline (car l))
+       (values (list->string (reverse w)) (cdr l))]
+      [else (split (cdr l) (cons (car l) w))]))
+  (split l '()))
+```
+
+这是一个典型的多返回值函数，它拆分单个列表返回两个值。
+
+对于这种函数的合约，可以使用普通函数箭头 ->，因为当 values 出现在最后， -> 会特殊对待：
+
+```
+(provide (contract-out
+          [split (-> (listof char?)
+                     (values string? (listof char?)))]))
+```
+
+这类函数的合约也可以使用 ->*:
+
+```
+(provide (contract-out
+          [split (->* ((listof char?))
+                      ()
+                      (value string? (listof char?)))]))
+```
+
+就像之前一样，使用 ->* 的参数的合约被一对额外的括号包围（必须总是像这样包围），空括号对表示这里没有可选参数。结果合约里有 values:一个字符串和一个字节数组。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
