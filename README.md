@@ -11,22 +11,22 @@
 - 一系列语言 - Racket的变体
 - 一套工具 - 用于使用一系列语言
 
-没有特别说明的话，我们只是简单使用 racket 语言本身。
+如果没有特别说明的话，我们只是指的是 racket 语言本身。
 
 racket的主要工具包括:
 - **racket**， 核心编译器，解释器和运行时的系统
 - **DrRacket**， 编程环境
 - **raco**， 用于执行racket命令来安装第三方包、构建库等操作的命令行工具。
 
-通常，特别是在刚开始的时候，你会通过 DrRacket 学习 racket。如果你愿意，你也可以通过命令行和你熟悉的文本编辑器来运行。详见Command-Line Tools and Your Editor of Choice。本指南其他语言相关的部分将和你选择的编辑器无关。
+在刚开始的时候，你通常会通过 DrRacket 学习 racket。如果你愿意也可以通过命令行和熟悉的文本编辑器运行。详见Command-Line Tools and Your Editor of Choice。本指南其他语言相关的部分将和你选择的编辑器无关。
 
-如果你使用了 DrRacket，需要选择合适的语言，因为 DrRacket 提供了很多不同的 Racket 变体和其他语言。假设你之前从未使用过DrRacket，首先启动它，在文本区的顶部文本区输入
+如果你使用了 DrRacket，那么将需要选择合适的语言，因为 DrRacket 提供了很多不同的 Racket 变体和其他语言。假设你之前从未用过DrRacket，首先启动它，在文本区的顶部文本区输入
 
 ```
 #lang racket
 ```
 
-然后点击文本区上方的运行按钮。DrRacket 会明白你想要在典型的 Racket 变体中运行(这与更小一点的 racket/base 或很多其他选项不同)。
+然后点击文本区上方的运行按钮。DrRacket 会明白你想要在 Racket 变体中运行(这与更小一点的 racket/base 或很多其他选项不同)。
 
 如果你之前使用过 DrRacket，它会记住你上次使用的语言，而不是从 #lang 行推断。选择 **Language|Choose Language** 菜单，将会出现一个对话框，选择第一项，这会告诉 DrRacket 通过 #lang 在源码中选择所选的语言。这仍然会把 #lang 放在文本区的顶部。
 
@@ -41,14 +41,14 @@ DrRacket 下方的文本区和 racket 命令行(无参数启动)都在扮演一�
 5
 ```
 
-字符串仍然是自运行的表达式。字符串表达式被写为首尾均是双引号的字符串：
+字符串仍然是自运行的表达式。字符串表达式被表示为首尾均是双引号的字符串：
 
 ```
 > "Hello, world!"
 "Hello, world!"
 ```
 
-racket 用圆括号包围长表达式（几乎除了简单的常量以外的任何表达式）。比如，函数调用被写为：左圆括号，函数名，参数表达式，右圆括号。下面的表达式用参数 "the boy out of the cpuntry"， 4， 7 调用内置的方法 substring：
+racket 用圆括号包围长表达式（几乎除了简单的常量以外的任何表达式）。比如，函数调用被写为：左圆括号，函数名，参数表达式，右圆括号。下面的表达式用参数 "the boy out of the cpuntry"， 4， 7 来调用内置的方法 substring：
 
 ```
 > (substring "the boy out of the country" 4 7)
@@ -69,7 +69,7 @@ racket 用圆括号包围长表达式（几乎除了简单的常量以外的任�
 "cou"
 ```
 
-尽管你可以在 REPL 中执行这个 define 形式，但是这些 define 形式通常是程序的一部分，你可能希望保存它们，并在之后使用。所以在 DrRacket 中，你通常都会把这些 define 放在文本区上方的定义区（和 #lang 放在一起）。
+虽然你可以在 REPL 中执行这个 define 形式，但是这些 define 形式通常是程序的一部分，你可能希望保存它们，并在之后使用。所以在 DrRacket 中，你通常都会把这些 define 放在文本区上方的定义区（和 #lang 放在一起）。
 
 ```
 #lang racket
@@ -77,9 +77,9 @@ racket 用圆括号包围长表达式（几乎除了简单的常量以外的任�
     (substring str 4 7))
 ```
 
-如果(extract "the boy")是程序的一部分，你也可以在定义区中定义。但是如果你仅仅想运行一下 extract 的例子，那么你可能更偏向于不在定义区运行，而是点击 Run 按钮，并且在REPL中执行(extract "the boy")。
+如果(extract "the boy")是程序的一部分，你也可以在定义区中定义。但是如果你仅仅想运行一下 extract 的例子，那么你可能更偏向于不在定义区运行，而是点击 Run 按钮，并且在REPL中执行 (extract "the boy")。
 
-当你用 racket 命令行代替 DrRacket 时，你可以用你喜欢的编辑器并把上面的文本保存进去。例如保存进“extract.rkt”，并在与该文件相同目录执行 racket，执行下面的操作：
+当你用 racket 命令行代替 DrRacket 时，你可以用你喜欢的编辑器并把上面的文本保存进去。例如保存进“extract.rkt”，并在与该文件相同目录执行 racket，并进行如下操作：
 
 ```
 > (enter! "extract.rkt")
@@ -102,16 +102,16 @@ enter! 会加载源码并且在模块中切换运行环境，就像在 DrRacket 
 (extract "the cat out of the bag")
 ```
 
-那么它就是一个在运行是能打印“cat”的完整程序。你可以使用 DrRacket 或者在 racket 中用 enter! 运行这个程序，但是如果这段源码被保存进<源码文件>，也可以在命令行中这样运行它
+那么它就是一个在运行时能打印“cat”的完整程序。你可以使用 DrRacket 或者在 racket 中用 enter! 运行这个程序，但是如果这段源码被保存进<源码文件>，也可以在命令行中这样运行它
 
 ```
-racket <src-filename>
+racket <源码文件>
 ```
 
 这里给出一些把代码打包成可执行程序的建议：
 
 - 在DrRacket中，你可以选择 **Racket|Create Executable**...选项
-- 在命令行中，运行raco exe <*src-filename*>。查看 raco exe: Creating Stand-Alone Executables 了解更多信息。
+- 在命令行中，运行raco exe <*源码文件*>。查看 raco exe: Creating Stand-Alone Executables 了解更多信息。
 - 在Unix 或 Mac OS中，你可以通过在代码文件开始的地方插入下面的代码来来生成可执行的脚本。
 
 ```
@@ -141,7 +141,7 @@ racket <src-filename>
 
 没错，这可以运行。因为 racket 会模拟一个传统意义上的 lisp 环境，但是我们强烈建议你不要在模块外使用 load 或写程序。
 
-在模块外进行定义将导致错误、性能下降和一个难以维护和运行程序。这些问题并不是 racket 特有的。这是传统顶层环境（top-level environment）的限制，Scheme 和 Lisp 都曾在特殊的命令行标记、编译指令、构建工具上面纠结过。模块系统被设计出来避免这些问题，所以长远地看来，以 #lang 开始你会更加愉快的使用 racket。
+在模块外进行定义将导致错误、性能低下和一个难以维护和运行程序。这些问题并不是 racket 特有的。这是传统顶层环境（top-level environment）的限制，Scheme 和 Lisp 都曾在特殊的命令行标记、编译指令、构建工具上面纠结过。模块系统被设计出来避免这些问题，所以长远地看，以 #lang 开始你会更加愉快的使用 racket。
 
 ## 2 Racket 要点
 
