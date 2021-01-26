@@ -700,7 +700,7 @@ racket 是 lisp （LISt Processor 列表处理器）语言的一个方言。所�
 > (map (lambda (i)
             (string-append i "!"))
         (list "peanuts" "popcorn" "crackerjack"))
-'("peanuts" "popcorn" "crackerjack")
+'("peanuts!" "popcorn!" "crackerjack!")
 ```
 
 andmap 和 ormap 会调用 and 或 or 来组合产生的结果。
