@@ -30,7 +30,7 @@ racket的主要工具包括:
 
 如果你之前使用过 DrRacket，它会记住你上次使用的语言，而不是从 #lang 行推断。选择 **Language|Choose Language** 菜单，将会出现一个对话框，选择第一项，这会告诉 DrRacket 通过 #lang 在源码中选择所选的语言。这仍然会把 #lang 放在文本区的顶部。
 
-### 1.1与 Racket 交互
+### 1.1 与 Racket 交互
 
 DrRacket 下方的文本区和 racket 命令行(无参数启动)都在扮演一个计算器的角色。你输入一个 racket 表达式，回车，结果便会被打印出来。在 racket 的术语中被称为 *read-eval-print loop* 或简称为REPL。
 
@@ -55,7 +55,7 @@ racket 用圆括号包围长表达式（几乎除了简单的常量以外的任�
 "boy"
 ```
 
-### 1.2定义和交互
+### 1.2 定义和交互
 
 你可以通过 define 定义你自己的类似 substring 的函数，就像这样：
 
@@ -89,7 +89,7 @@ racket 用圆括号包围长表达式（几乎除了简单的常量以外的任�
 
 enter! 会加载源码并且在模块中切换运行环境，就像在 DrRacket 中点击 Run 按钮一样。
 
-### 1.3创建可执行程序
+### 1.3 创建可执行程序
 
 如果你的文件（或者DrRacket定义区）包含如下内容
 
@@ -122,7 +122,7 @@ racket <源码文件>
 
 只要 racket 在用户的可执行程序的搜索路径中，这个脚本就可以执行。或者在 #! 后（#!和路径之间有一个空格）使用 racket 的完整路径，这样racket是否在可执行程序的搜索路径中就无所谓了。
 
-### 1.4对于有 Lisp/Scheme 经验的读者的一些注意事项
+### 1.4 对于有 Lisp/Scheme 经验的读者的一些注意事项
 
 如果你已经有一些Scheme或者Lisp的经验，你可能会把
 
@@ -147,7 +147,7 @@ racket <源码文件>
 
 本章将简单介绍作为本指南其他章节的背景知识。有Racket经验的读者可以放心的跳至 Built-In Datatypes。
 
-### 2.1简单值（Simple Value）
+### 2.1 简单值（Simple Value）
 
 racket的值包括数字，布尔值，字符串，字节串。在 DrRacket 和文档的例子中，值表达式会显示为绿色。
 
@@ -180,7 +180,7 @@ racket的值包括数字，布尔值，字符串，字节串。在 DrRacket 和�
 "Bugs \"Figaro\" Bunny"
 ```
 
-### 2.2定义和表达式
+### 2.2 定义和表达式
 
 模块可以这样写：
 
@@ -194,7 +194,7 @@ racket的值包括数字，布尔值，字符串，字节串。在 DrRacket 和�
 
 约定俗成的，* 在语法中指前一个元素的零次或多次重复，+ 指前一个元素的一次或多次重复，{} 将序列中重复元素进行分组。
 
-#### 2.2.1定义
+#### 2.2.1 定义
 
 定义的形式如下：
 
@@ -208,7 +208,7 @@ racket的值包括数字，布尔值，字符串，字节串。在 DrRacket 和�
 (define (<id> <id>*) <expr>+)
 ```
 
-把第一个 <*id*> 绑定到一个函数（也被成为过程（procedure））并命名，该函数以剩余的 <*id*>+ 为参数。在这个例子中，<*expr*>+ 是该函数的函数体。当该函数被调用，返回最后的 <*expr*> 结果。
+把第一个 <*id*> 绑定到一个函数（也被称为过程（procedure））并命名，该函数以剩余的 <*id*>+ 为参数。在这个例子中，<*expr*>+ 是该函数的函数体。当该函数被调用，返回最后的 <*expr*> 结果。
 
 例如:
 
@@ -238,15 +238,15 @@ racket的值包括数字，布尔值，字符串，字节串。在 DrRacket 和�
 
 例子
 
-```
+```lisp
 (define (bake flavor)
-    (pringf "preheating oven...\n")
+    (printf "preheating oven...\n")
     (string-append flovr " pie"))
 ```
 
 racket 程序更倾向于避免副作用，所以函数体中通常只有一个表达式。虽然这很重要，但是我们仍要理解函数体中是允许多表达式的，因为它可以解释下面你的 nobake 函数为什么会失败：
 
-```
+```lisp
 (define (nobake flavor)
     string-append flavor "hello")
 
@@ -256,7 +256,7 @@ racket 程序更倾向于避免副作用，所以函数体中通常只有一个�
 
 函数nobake中，没有用圆括号将 string-append flavor "jello" 扩起来，所以他们是三个独立的表达式而不是一个函数调用。表达式 string-append 和 flavor 被执行了，但是他们的结果未被使用。函数的结果是最后一个表达式的结果：“hello”。
 
-#### 2.2.2代码缩进
+#### 2.2.2 代码缩进
 
 换行和缩进对于解析 racket 程序并不重要，但是大部分 racket 程序员会使用一套标准规则使代码更可读。例如，方法体通常在定义的下一行进行缩进。标识符紧跟在没有额外空格的左括号后，右括号永远不在他们自己的那行。
 
@@ -271,7 +271,7 @@ racket 程序更倾向于避免副作用，所以函数体中通常只有一个�
 
 对于这个例子，缩进会使错误更加明显。在其他例子中，当一个左圆括号没有一个与之匹配的右圆括号时，缩进会正常。当圆括号缺失时，racket 和 DrRacket 都会通过源码缩进显示。
 
-#### 2.2.3标识符
+#### 2.2.3 标识符
 
 racket 的标识符语法很自由。除了特殊字符
 
@@ -281,7 +281,7 @@ racket 的标识符语法很自由。除了特殊字符
 
 和构成数字常量字符序列，几乎任何不含有空白字符的形式都可以是一个 <*id*> （标识符）。例如， subtring 是一个标识符。同样 string-append 和 a+b 也是标识符，而不是算术表达式。下面还有几个例子：
 
-```
+```lisp
 +
 Hfuhruhurr
 integer?
@@ -300,7 +300,7 @@ a-b-c+1-2-3
 
 <*expr*>* 的数量决定应用到名为 <*id*> 的函数的参数数量。
 
-racket内置了很多函数标识符，如 substring、string-append。后面我们会见到很多的例子。
+racket 内置了很多函数标识符，如 substring、string-append。后面我们会见到很多的例子。
 
 文档中的 racket 代码示例中，使用的内置名称会链接到参考手册。你可以点击并查看它的使用细节。
 
@@ -339,7 +339,7 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
 #t
 ```
 
-#### 2.2.5条件判断(if、and、or和cond)
+#### 2.2.5 条件判断(if、and、or和cond)
 
 最简单的一种条件判断是if
 
@@ -351,7 +351,7 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
 
 例如：
 
-```
+```lisp
 (if (> 2 3)
     "bigger"
     "smaller")
@@ -370,7 +370,7 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
 
 复杂的条件判断可以通过嵌套if表达式来实现。例如，可以使reply函数处理非字符串的输入：
 
-```
+```lisp
 (define (reply s)
     (if (string? s)
         (if (equal? "hello" (substring s 0 5))
@@ -381,7 +381,7 @@ racket内置了很多函数标识符，如 substring、string-append。后面我
 
 避免出现两次“huh？”，更好的书写方式为
 
-```
+```lisp
 (define (reply s)
     (if (if (string? s)
             (equal? "hello" (substring s 0 5))
@@ -401,7 +401,7 @@ and 截断：当有表达式返回#f时，and 会停止并返回 #f，否则它�
 
 例如：
 
-```
+```lisp
 (define (reply s)
     (if (and (string? s)
              (>= (string-length s) 5
@@ -417,7 +417,7 @@ and 截断：当有表达式返回#f时，and 会停止并返回 #f，否则它�
 
 另一个常见的 if 嵌套是提供一系列测试，每个都对应一个结果：
 
-```
+```lisp
 (define (reply-more s)
     (if (equal? "hello" (substring s 0 5))
         "hi!"
@@ -434,11 +434,11 @@ and 截断：当有表达式返回#f时，and 会停止并返回 #f，否则它�
 ( cond {[ <expr> <expr>* ]}* )
 ```
 
-cond 形式使用方括号包裹一些列子句。每个子句中的第一个 <*expr*> 是测试表达式。如果返回 true，那么剩下的 <*expr*>* 将被执行，其中最后一个表达式执行结果将作为整个 cond 表达式的结果；并且剩下的子句将会被忽略。如果 <*expr*> 返回#f，那么这个表达式剩下的 <*expr*>* 将会被忽略，继续执行下一条子句。最后一个子句可以使用 else (它的作用和#t一样)作为测试表达式。
+cond 形式使用方括号包裹一些列子句。每个子句中的第一个 <*expr*> 是测试表达式。如果返回 #t，那么剩下的 <*expr*>* 将被执行，其中最后一个表达式执行结果将作为整个 cond 表达式的结果；并且剩下的子句将会被忽略。如果 <*expr*> 返回 #f，那么这个表达式剩下的 <*expr*>* 将会被忽略，继续执行下一条子句。最后一个子句可以使用 else (它的作用和#t一样)作为测试表达式。
 
 如果使用 cond，上面的 reply-more 函数可以被更简洁的写成下面的形式：
 
-```
+```lisp
 (define (reply-more s)
     (cond
         [(equal? "hello" (substring s 0 5)) "hi!"]
@@ -458,7 +458,7 @@ cond 形式使用方括号包裹一些列子句。每个子句中的第一个 <*
 
 在 cond 中使用方括号只是一种惯例。在racket中方括号和圆括号实际上是可互换的，只要 ( 匹配 ) ， [ 匹配 ] 就可以。在一些关键地方使用方括号会使得代码更可读一点。
 
-#### 2.2.6又是函数调用
+#### 2.2.6 又是函数调用
 
 在我们之前函数调用的程序中，我们介绍得过于简单了。函数调用实际上可以允许任意表达式，而不只是一个<*id*>：
 
@@ -468,7 +468,7 @@ cond 形式使用方括号包裹一些列子句。每个子句中的第一个 <*
 
 第一个 <*expr*> 通常是 <*id*>，比如 string-append 或者 +，但是它可以是任何一个可执行的函数。例如，可以是一个条件表达式：
 
-```
+```lisp
 (define (bouble v)
     ((if (string? v) string-append +) v v))
 
@@ -481,7 +481,7 @@ cond 形式使用方括号包裹一些列子句。每个子句中的第一个 <*
 
 从语法上看，第一个表达式甚至可以是一个数字，但是这个会出错，因为数字不是一个函数。
 
-```
+```lisp
 > (1 2 3 4)
 application: not a procedure;
  expected a procedure that can be applied to arguments
@@ -498,16 +498,16 @@ application: not a procedure;
 
 如果为每个数字都起一个名字，racket程序将会特别枯燥。比如一个一个(+ 1 2)，你得这样写：
 
-```
+```lisp
 > (define a 1)
 > (define b 2)
 > (+ a b)
 3
 ```
 
-同理，给所有函数命名通常也会非常枯燥。比如，定义一个函数twice，它接受一个函数和一个参数。如果你已经有一个函数，执行twice会很方便，比如 sqrt:
+同理，给所有函数命名通常也会非常枯燥。比如，定义一个函数 twice，它接受一个函数和一个参数。如果你已经有一个函数，执行twice会很方便，比如 sqrt:
 
-```
+```lisp
 (define (twice f v)
     (f (f v)))
 
@@ -517,7 +517,7 @@ application: not a procedure;
 
 如果你想调用一个还未定义的函数，你也可以定义它，然后传给twice：
 
-```
+```lisp
 (define (louder s)
     (string-append s "!"))
 
@@ -533,14 +533,14 @@ application: not a procedure;
 
 lambda 自身作为一个函数执行：
 
-```
+```lisp
 > (lambda (s) (string-append s "!"))
 #<procedure>
 ```
 
 使用 lambda 重写上面的 twice 可以这样：
 
-```
+```lisp
 > (twice (lambda (s) (string-append s "!"))
          "hello")
 "hello!!"
@@ -551,7 +551,7 @@ lambda 自身作为一个函数执行：
 
 另一个使用 lambda 的方式是作为函数的结果来生成函数：
 
-```
+```lisp
 (define (make-add-suffix s2)
     (lambda (s) (string-append s s2)))
 
@@ -563,9 +563,9 @@ lambda 自身作为一个函数执行：
 "hello......"
 ```
 
-racket 是一个基于词法作用域的语言，这表示 make-add-suffix 返回的函数中的s2，在调用这个函数时，总是引用该参数。换句话说，lambda生成的函数记住了 s2：
+racket 是一个基于词法作用域的语言，这表示 make-add-suffix 返回的函数中的 s2，在调用这个函数时，总是引用该参数。换句话说，lambda 生成的函数记住了 s2：
 
-```
+```lisp
 > (define louder (make-add-suffix "!"))
 > (define less-sure (make-add-suffix "?"))
 > (stice less-sure "really")
@@ -576,7 +576,7 @@ racket 是一个基于词法作用域的语言，这表示 make-add-suffix 返�
 
 到目前为止，我们已经在非函数定义中提到过这种定义 (define <*id*> <*expr*>)。这种描述具有误导性，因为 <*expr*> 可以是一个lambda 形式，这种情况下，这种定义相当于是一这个 “function” 定义的形式。例如，下面两种形式是一样的：
 
-```
+```lisp
 (define (louder s)
     (string-append s "!"))
 
@@ -590,7 +590,7 @@ racket 是一个基于词法作用域的语言，这表示 make-add-suffix 返�
 
 请注意，第二个 louder 函数是一个用 lambda 写的匿名函数，但是，编译器会尽可能推断一个名称使打印和错误报告更有意义和更具可读性。
 
-#### 2.2.8局部绑定 define， let， let*
+#### 2.2.8 局部绑定 define， let， let*
 
 是时候介绍racket语法的另一个简化了。在函数体中，可以在函数体表达式之前进行定义:
 
@@ -603,7 +603,7 @@ racket 是一个基于词法作用域的语言，这表示 make-add-suffix 返�
 
 例如：
 
-```
+```lisp
 (define (converse s)
     (define (starts? s2) ; local to converse
         (define len2 (string-length s2)) ; local to starts?
@@ -633,7 +633,7 @@ starts?: undefined;
 
 每一个绑定子句是一个被放括号包围的 <*id*> 和 <*expr*>，子句后面的那些表达式是 let 体。在 let 体里，每一个子句中的 <*id*> 会被被绑定成<*expr*>的结果。
 
-```
+```lisp
 > (let ([x (random 4)]
         [o (random 4)])
     (cond
@@ -645,7 +645,7 @@ starts?: undefined;
 
 let 形式的绑定只能在它的执行体中起作用，所以它的子句中的绑定不能相互引用。然而，let* 形式允许后面的子句引用前面子句的绑定：
 
-```
+```lisp
 > (let* ([x (random 4)]
          [o (random 4)]
          [diff (number->string (abs (- x o)))])
@@ -656,13 +656,13 @@ let 形式的绑定只能在它的执行体中起作用，所以它的子句中�
  "O wins by 1"
 ```
 
-### 2.3列表，迭代和递归
+### 2.3 列表，迭代和递归
 
 racket 是 lisp （LISt Processor 列表处理器）语言的一个方言。所以内置的列表数据结构仍然是该语言的突出特性。
 
 函数 list 可以传入任何数量的值，返回一个包含这些值的列表：
 
-```
+```lisp
 > (list "red" "green" "blue")
 '("red" "green" "blue")
 > (list 1 2 3 4 5)
@@ -673,7 +673,7 @@ racket 是 lisp （LISt Processor 列表处理器）语言的一个方言。所�
 
 许多预定义的函数用来操作列表。下面举一些列子：
 
-```
+```lisp
 > (length (list "hop" "skip" "jump")) ; count the elements
 3
 > (list-ref (list "hop" "skip" "jump") 0) ;extract by position
@@ -688,13 +688,13 @@ racket 是 lisp （LISt Processor 列表处理器）语言的一个方言。所�
 #f
 ```
 
-#### 2.3.1内置的列表迭代（Predefined List Loops）
+#### 2.3.1 内置的列表迭代（Predefined List Loops）
 
 除了像 append 这样的简单操作，racket还提供了许多方法用来迭代列表中的元素。这些迭代方法和 java、racket 或者其他语言中的 for 一样。racket 的迭代体被封装进函数用来依次应用到每个元素，所以 lambda 和迭代函数结合使用将十分方便。
 
 不同的迭代函数以不同的方式组合迭代结果。函数 map 使用每个元素的结果产生一个新的列表：
 
-```
+```lisp
 > (map sqrt (list 1 4 9 16))
 '(1 2 3 4)
 > (map (lambda (i)
@@ -705,7 +705,7 @@ racket 是 lisp （LISt Processor 列表处理器）语言的一个方言。所�
 
 andmap 和 ormap 会调用 and 或 or 来组合产生的结果。
 
-```
+```lisp
 > (andmap string? (list "a" "b" "c"))
 #t
 > (andmap string? (list "a" "b" 6))
@@ -716,7 +716,7 @@ andmap 和 ormap 会调用 and 或 or 来组合产生的结果。
 
 函数 map、andmap 和 ormap 不仅可以处理单个列表也可以同时处理多个列表。被处理的表达式必须长度相同，接受的函数从每个列表中取一个元素作为参数：
 
-```
+```lisp
 (map (lambda (s n) (substring s 0 n))
      (list "peanuts" "popcorn" "crackerjack")
      (list 6 3 7))
@@ -725,16 +725,16 @@ andmap 和 ormap 会调用 and 或 or 来组合产生的结果。
 
 函数 filter 会保留迭代体执行后返回真的元素，丢弃返回 #f 的元素:
 
-```
+```lisp
 > (filter string? (list "a" "b" 6))
 '("a" "b")
 > (filter positive? (list 1 -2 6 7 0))
 '(1 6 7)
 ```
 
-函数 foldl 扩充了一些迭代函数。它使用一个函数处理一个元素并把该元素和当前值组合，所以这个函数需要有一个额外的初始值。此外初始值必须在列表之前就被提供：
+函数 foldl 扩充了一些迭代函数。它使用一个函数处理一个元素并把该元素和当前值组合，所以这个函数需要有一个额外的初始值。初始值必须在列表之前就被提供：
 
-```
+```lisp
 > (foldl (lambda (elem v)
             (+ v (* elem elem)))
          0
@@ -746,18 +746,18 @@ andmap 和 ormap 会调用 and 或 or 来组合产生的结果。
 
 racket还提供了一个通用的列表处理形式 for/list，它通过遍历一个序列来构建一个列表。列表和相关迭代形式将会在 Iterations and Comprehensions 中介绍。
 
-#### 2.3.2从头开始进行列表迭代（List Iteration from Scratch）
+#### 2.3.2 从头开始进行列表迭代（List Iteration from Scratch）
 
 尽管 map 和其他迭代方法都预先内置了，但是它们都不是原始的方式。你也可以通过使用列表原语来生成等效的迭代。
 
-因为 racket 的列表是一个链表，所以在一个非空的列表中，两个核心的是
+因为 racket 的列表是一个链表，所以在一个非空的列表中，两个核心的是：
 
 - first：获取列表中的第一个元素
 - rest：获取列表中剩余的元素
 
 比如：
 
-```
+```lisp
 > (first (list 1 2 3))
 1
 > (rest (list 1 2 3))
@@ -766,7 +766,7 @@ racket还提供了一个通用的列表处理形式 for/list，它通过遍历�
 
  在链表添加一个元素，可以使用 cons （“construct”的缩写）把元素添加到列表的前面。如果是空列表，可以使用常量 empty。
 
-```
+```lisp
 > empty
 '()
 > (cons "head" empty)
@@ -777,7 +777,7 @@ racket还提供了一个通用的列表处理形式 for/list，它通过遍历�
 
 因为 first 和  rest 只能处理非空列表，为了处理列表，我们需要能区分空列表和非空列表。函数 empty? 用来区分空列表，cons? 用来区分非空列表。
 
-```
+```lisp
 > (empty? empty)
 #t
 > (empty? (cons "head" empty))
@@ -792,7 +792,7 @@ racket还提供了一个通用的列表处理形式 for/list，它通过遍历�
 
 比如：
 
-```
+```lisp
 (define (my-length lst)
     (cond
         [(empty? lst) 0]
@@ -804,7 +804,7 @@ racket还提供了一个通用的列表处理形式 for/list，它通过遍历�
 3
 ```
 
-```
+```lisp
 (define (my-map f lst)
     (cond
         [(empty? lst) empty]
@@ -819,7 +819,7 @@ racket还提供了一个通用的列表处理形式 for/list，它通过遍历�
 
 #### 2.3.3尾递归
 
-my-length 和 my-map 都运行在O(n)的算法空间上（n是列表长度）。想象一下(my-length (list "a" "b" "c"))怎样运行就很容易知道。
+my-length 和 my-map 都运行在 O(n) 的算法空间上（n是列表长度）。想象一下 (my-length (list "a" "b" "c")) 怎样运行就很容易知道。
 
 ```
 (my-length (list "a" "b" "c"))
@@ -836,7 +836,7 @@ my-length 和 my-map 都运行在O(n)的算法空间上（n是列表长度）。
 
 你可以通过一路累加结果来避免堆叠。我们需要一个函数（它接受一个列表和一个当前积累的长度）来积累长度。下面的代码使用一个局部函数，它用一个参数len表示当前积累的长度：
 
-```
+```lisp
 (define (my-length lst)
     ; local function iter
     (define (iter lst len)
