@@ -1697,7 +1697,7 @@ eval:2:0: #%datum: keyword misused as an expression
 {0 . 2}
 ```
 
-### 3.9 向量(vectors)
+### 3.9 向量 (vectors)
 
 向量是一个固定长度的、包含任意值的数组。与列表不同，向量支持对其元素的常量时间内的访问和更新。
 
@@ -1749,7 +1749,7 @@ hash-ref: no value found for key
 
 不可变哈希表可以用 hash-set 扩充，这样会在常量的时间内创建一个新的不可变哈希表。
 
-```
+```lisp
 > (define ht (hash "apple" 'red "banana" 'yellow))
 > (hash-ref ht "apple")
 'red
@@ -1765,18 +1765,18 @@ hash-ref: no value found for key
 
 例子：
 
-```
+```lisp
 > (define ht #hash(("apple" . red)
                    ("banana" . yellow)))
 > (hash-ref ht "apple")
 'red
 ```
 
-可变和不可变哈希表都会像不可变哈希表一样打印，如果所有键值可以用引号表示，则使用带引号的 hash、hasheqv 或者 hasheqv 形式，否则使用 hahs、hasheq 或者 hasheqv：
+可变和不可变哈希表都会像不可变哈希表一样打印，如果所有键值可以用引号表示，则使用带引号的 #hash、#hasheqv 或者 #hasheqv 形式，否则使用 hash、hasheq 或者 hasheqv：
 
 例子：
 
-```
+```lisp
 > #hash(("apple" . red)
         ("banana" . yellow))
 '#hash(("apple" . red) ("banana" . yellow))
@@ -1788,7 +1788,7 @@ hash-ref: no value found for key
 
 例子：
 
-```
+```lisp
 > (define ht (make-weak-hasheq))
 > (hash-set! ht (gensym) "can you see me?")
 > (collect-garbage)
@@ -1800,7 +1800,7 @@ hash-ref: no value found for key
 
 例子：
 
-```
+```lisp
 > (define ht (make-weak-hasheq))
 > (let ([g (gensym)])
     (hash-set! ht g (list g)))
@@ -1816,13 +1816,13 @@ hash-ref: no value found for key
 0
 ```
 
-### 3.11盒子（Boxes）
+### 3.11 盒子（Boxes）
 
 盒子类似于单元素的向量。被打印为一个 #& 的引用后面跟着盒子值的打印形式。#& 形式也可以当成表达式使用，但是由于结果的盒子是常量，所以没什么用处。
 
 例子：
 
-```
+```lisp
 > (define b (box "apple"))
 > b
 '#&"apple"
@@ -1833,7 +1833,7 @@ hash-ref: no value found for key
 '#&(banana boat)
 ```
 
-### 3.12void 和 undefined
+### 3.12 void 和 undefined
 
 一些函数和表达式不需要返回值。比如，display 函数被调用只是为了写入到输出端的副作用。在这些情况下，返回值通常是一个被打印为 <*viod*> 的特殊常量。当一个表达式的结果仅仅是一个 #<*void*>，REPL不会打印任何东西。
 
@@ -1841,7 +1841,7 @@ void 函数使用任意数量的参数，并且返回 #<*void*>。（那是因�
 
 例子：
 
-```
+```lisp
 > (void)
 > (void 1 2 3)
 > (list (void))
@@ -1850,7 +1850,7 @@ void 函数使用任意数量的参数，并且返回 #<*void*>。（那是因�
 
 常量 undefined 被打印为 #<*undefined*>，有时被用于一个其值尚不可用的引用的结果。在之前的 racket 版本中（6.1版本之前）,过早地引用一个绑定会产生 #<*undefined*>；而现在，过早的引用会抛出异常。
 
-```
+```lisp
 (define (fails)
     (define x x)
     x)
@@ -1864,7 +1864,7 @@ x: undefined;
 
 在 racket 要素一章介绍过一些 racket 的语法形式：定义、函数调用、条件句等等。这一节会展示这些形式的更多细节，和一些新增的基础形式。
 
-### 4.1表示法（Notation）
+### 4.1 表示法（Notation）
 
 本章节（以及文档的剩余部分）使用一个与《racket要素》一章那种基于字符的语法略有不同的表示法。这种语法形式如下所示：
 
@@ -1881,7 +1881,7 @@ x: undefined;
 
 通常，根据惯例，语法中的方括号表示一系列的圆括号形式。这表示，方括号不表示为语法形式的可选部分。
 
-... 表示前一个形式的另个或多个重复。...+ 表示前一个形式的一个或多个重复。除此之外，非斜体的标识符只代表他们自己。
+... 表示前一个形式的零个或多个重复。...+ 表示前一个形式的一个或多个重复。除此之外，非斜体的标识符只代表他们自己。
 
 根据上面的语法，这里给出一些用法：
 
@@ -1891,9 +1891,9 @@ x: undefined;
 (something [x my-favorite-martian x] (+ 1 2) #f)
 ```
 
-### 4.2标识符和绑定
+### 4.2 标识符和绑定
 
-表达式上下文决定了出现在表达式中标识符的含义。特别是以racket语言启动一个模块：
+表达式上下文决定了出现在表达式中标识符的含义。特别是以 racket 语言启动一个模块：
 
 ```
 #lang racket
@@ -1905,7 +1905,7 @@ x: undefined;
 
 比如：
 
-```
+```lisp
 #lang racket
 (define f
     (lambda (x)
@@ -1921,7 +1921,7 @@ define 是 f 的绑定，lambda 是 x 的一个绑定， let 是 y 的一个绑�
 
 例如：
 
-```
+```lisp
 (define f
     (lambda (append)
         (define cons (append "ugly" "confusing"))
@@ -1937,7 +1937,7 @@ define 是 f 的绑定，lambda 是 x 的一个绑定， let 是 y 的一个绑�
 甚至像 define 和 lambda 这样的标识符也可以绑定，尽管它们有 *transformer* 绑定而不是值绑定。因为 define 有 *transformer* 绑定，所以标识符 define 不能被自身使用来获得值。然而 define 的正常绑定也可以被遮挡。
 
 例子：
-```
+```lisp
 > define
 eval:1:0: define: bad syntax
     in: define
@@ -1947,7 +1947,7 @@ eval:1:0: define: bad syntax
 
 同样，以这种方式遮挡标准绑定很少是一个好主意，但是这是racket的固有的灵活性。
 
-### 4.3函数调用
+### 4.3 函数调用
 
 当 *porc-expr* 不是语法转换器（syntax transformer）的标识符时（比如 if 和 define），这种形式的表达式
 
@@ -1957,13 +1957,13 @@ eval:1:0: define: bad syntax
 
 就是一个函数调用（也被成为过程应用）。
 
-#### 4.3.1执行顺序和数量
+#### 4.3.1 执行顺序和数量
 
 函数调用按顺序（从左至右）执行 proc-expr 和 arg-exprs。如果 proc-expr 生成一个接受的参数和 arg-exprs 一样多的函数，那么这个函数就会被调用。否则会抛出一个异常。
 
 例如：
 
-```
+```lisp
 > (cons 1 null)
 '(1)
 > (+ 1 2 3)
@@ -1989,11 +1989,11 @@ application: not a procedure;
 
 一些函数，比如 cons，接受固定长度参数。一些函数，比如 + 或者 list，接受任意数量的参数。一些函数接受的参数的个数是一个区间，比如 substring 接受2至2个参数。
 
-#### 4.3.2关键字参数
+#### 4.3.2 关键字参数
 
 一些函数接受关键字参数，而不是接受按位置定义的参数。这种情况下，arg 可以表达为 arg-keyword arg-expr 而不仅仅是 arg-expr： 
 
-```
+```lisp
 (proc-expr arg ...)
 
     arg = arg-expr
@@ -2002,7 +2002,7 @@ application: not a procedure;
 
 例如：
 
-```
+```lisp
 (go "super.rkt" #:mode 'fast)
 ```
 
@@ -2010,7 +2010,7 @@ application: not a procedure;
 
 因为关键字自身不是表达式，所以 
 
-```
+```lisp
 (go "super.rkt" #:mode #:fast)
 ```
 
@@ -2018,7 +2018,7 @@ application: not a procedure;
 
 关键字参数的顺序取决与 arg-exprs 被执行时的顺序，但是函数接受关键字参数不关心他们在参数列表的位置。上述的调用等价于：
 
-```
+```lisp
 (go #:mode 'fast "super.rkt")
 ```
 
