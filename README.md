@@ -1945,14 +1945,14 @@ eval:1:0: define: bad syntax
 5
 ```
 
-同样，以这种方式遮挡标准绑定很少是一个好主意，但是这是racket的固有的灵活性。
+同样，以这种方式遮挡标准绑定很少是一个好主意，但这是racket的固有的灵活性。
 
 ### 4.3 函数调用
 
 当 *porc-expr* 不是语法转换器（syntax transformer）的标识符时（比如 if 和 define），这种形式的表达式
 
 ```
-（proc-expr arg-expr ...）
+(proc-expr arg-expr ...)
 ```
 
 就是一个函数调用（也被成为过程应用）。
@@ -1987,7 +1987,7 @@ application: not a procedure;
    3
 ```
 
-一些函数，比如 cons，接受固定长度参数。一些函数，比如 + 或者 list，接受任意数量的参数。一些函数接受的参数的个数是一个区间，比如 substring 接受2至2个参数。
+一些函数，比如 cons，接受固定长度参数。一些函数，比如 + 或者 list，接受任意数量的参数。一些函数接受的参数的个数是一个区间，比如 substring 接受 2 至3 个参数。
 
 #### 4.3.2 关键字参数
 
@@ -2006,7 +2006,7 @@ application: not a procedure;
 (go "super.rkt" #:mode 'fast)
 ```
 
-用 "super.rkt" 按位置传惨调用函数 go，用 'fast 作为参数传递给 #:mode 关键字。关键字会隐士匹配跟在它后面的表达式。
+用 "super.rkt" 按位置传参调用函数 go，用  'fast 作为参数传递给 #:mode 关键字。关键字会隐式匹配跟在它后面的表达式。
 
 因为关键字自身不是表达式，所以 
 
@@ -2026,7 +2026,7 @@ application: not a procedure;
 
 函数调用的语法支持任意数量的参数，但是某一特定的函数通常明确接受固定数量的参数。因此，接受参数列表的函数不能将列表中的项直接应用到类似于 '+' 这样的函数。
 
-```
+```lisp
 (define (avg lst) ; doesn't work...
     (/ (+ lst) (length lst)))
 
@@ -2049,7 +2049,7 @@ list-ref: index too large for list
 
 apply 函数给这种显示提供一种解决方式。它使用一个函数和一个参数列表，将函数应用到参数列表里的值。
 
-```
+```lisp
 (define (avg lst)
     (/ (apply + lst) (length lst)))
 
@@ -2063,7 +2063,7 @@ apply 函数给这种显示提供一种解决方式。它使用一个函数和�
 
 方便起见，函数 apply 还可以接受函数和参数列表之间的其他参数。而外的参数会被 cons 到参数列表：
 
-```
+```lisp
 (define (anti-sum lst)
     (apply - 0 lst))
 
@@ -2073,21 +2073,21 @@ apply 函数给这种显示提供一种解决方式。它使用一个函数和�
 
 函数 apply 也可以接受关键字参数，并把这些参数全部传递给被调用函数：
 
-```
+```lisp
 (apply go #:mode 'fast '("super.rkt"))
 (apply go '("super.rkt") #:mode 'fast)
 ```
 
 apply列表参数中包含的关键字不算作被调用函数的关键字参数；相反，此列表中的所有参数都被视为位置参数。为了传关键字参数给函数，使用函数 keyword-apply，它接受一个函数和三个列表。前两个列表是对应的：地一个列表包含关键字（按 keyword<?排序），第二个列表包含相应关键字的没一个参数。第三个列表包含按位置传递的参数。
 
-```
+```lisp
 (keyword-apply go
                '(#:mode)
                '(fast)
                '("super.rkt"))
 ```
 
-### 4.4匿名函数 （Functions (Procedures): lambda）
+### 4.4 匿名函数 （Functions (Procedures): lambda）
 
 lambda 表达式可以创建函数。最简单的情况，lambda 表达式的形式为：
 
@@ -2098,7 +2098,7 @@ lambda 表达式可以创建函数。最简单的情况，lambda 表达式的形
 
 n 个 arg-id 的 lambda 表达式表示接受 n 个参数：
 
-```
+```lisp
 > ((lambda (x) x)
    1)
 1
@@ -2116,7 +2116,7 @@ number
    1
 ```
 
-#### 4.4.1声明剩余参数（Declaring a Rest Argument）
+#### 4.4.1 声明剩余参数（Declaring a Rest Argument）
 
 lambda 表达式也可以是这种形式：
 
@@ -2130,7 +2130,7 @@ lambda 可以有一个单一的 *rest-id*,而不必用圆括号包围。
 
 例如：
 
-```
+```lisp
 > ((lambda x x)
     1 2 3)
 '(1 2 3)
@@ -2145,7 +2145,7 @@ lambda 可以有一个单一的 *rest-id*,而不必用圆括号包围。
 
 例如：
 
-```
+```lisp
 (define max-mag
     (lambda num
         (apply max (map magnitude nums))))
@@ -2167,7 +2167,7 @@ lambda形式还支持结合 *rest-id* 的必需参数：
 
 例如：
 
-```
+```lisp
 (define max-mag
     (lambda (num . nums)
         (apply max (map magnitude (cons num nums)))))
@@ -2182,9 +2182,9 @@ number
   given: 0
 ```
 
-*rest-id* 有时也被成为剩余参数，因为它接受函数参数的剩余部分。
+*rest-id* 有时也被称为剩余参数，因为它接受函数参数的剩余部分。
 
-#### 4.4.2声明可选参数（Declaring Optional Arguments）
+#### 4.4.2 声明可选参数（Declaring Optional Arguments）
 
 不仅仅是标识符，lambda 形式的参数（除了剩余参数）可以用标识符和默认值指定：
 
@@ -2204,7 +2204,7 @@ number
 
 例如：
 
-```
+```lisp
 (define greet
     (lambda (given [surname "Smith"])
         (string-append "Hello, " given " " surname)))
@@ -2225,7 +2225,7 @@ number
 "Hello, Adam Smith"
 ```
 
-#### 4.4.3声明关键字参数
+#### 4.4.3 声明关键字参数
 
 lambda 形式可以定义按关键字（而不是按位置）传入的参数。关键字参数可以和按位置参数混合使用，默认值表达式可以应用到任意类型的参数。
 
@@ -2243,9 +2243,9 @@ lambda 形式可以定义按关键字（而不是按位置）传入的参数。�
               | arg-keyword [arg-id default-expr]
 ```
 
-形如 arg-keyword arg-id 的参数被程序通过 arg-word 使用。keyword-identigfer 在参数列中的位置对于程序匹配参数不重要，因为它会被按关键字匹配成为参数，而不是按位置。
+形如 arg-keyword arg-id 的参数被程序通过 arg-keyword 使用。keyword-identigfer 在参数列表中的位置对于程序匹配参数并不重要，因为它会被按关键字匹配成为参数（而不是按位置）。
 
-```
+```lisp
 (define greet
     (lambda (given #:last surname)
         (string-append "Hello, " given " " surname)))
@@ -2260,7 +2260,7 @@ arg-keyword [arg-id default-expr] 指定一个基于关键字并带有默认值�
 
 例如:
 
-```
+```lisp
 (define greet
     (lambda (#:hi [hi "Hello"] given #:last [surname "smith"])
         (string-append hi ", " given " " surname)))
@@ -2279,7 +2279,7 @@ lambda 形式不支持直接创建可接受“剩余”关键字参数的函数�
 
 例如：
 
-```
+```lisp
 (define (trace-wrap f)
   (make-keyword-procedure
    (lambda (kws kw-args . rest)
@@ -2292,7 +2292,7 @@ Called with (#:hi) ("Howdy") ("John")
 "Howdy, John Smith"
 ```
 
-#### 4.4.4数量敏感函数:case-lambda （Arity-Sensitive Functions: case-lambda）
+#### 4.4.4 数量敏感函数: case-lambda （Arity-Sensitive Functions: case-lambda）
 
 case-lambda 形式根据被提供参数的数量的不同，产生函数的行为完全不同。case-lambda 表达式具有如下形式：
 
@@ -2306,11 +2306,11 @@ formals = (arg-id ...)
         | (arg-id ...+ . rest-id)
 ```
 
-每一个[formals body ...+]都类似(lambda formals body ...+)。使用一个 case-lambda 生成的函数类似于应用 lambda 到第一个参数数量匹配的情况。
+每一个 [formals body ...+] 都类似(lambda formals body ...+)。使用一个 case-lambda 生成的函数类似于应用 lambda 到第一个参数数量匹配的情况。
 
 例如：
 
-```
+```lisp
 (define greet
     (case-lambda
         [(name) (string-append "Hello, " name)]
@@ -2329,7 +2329,7 @@ number
 
 case-lambda 函数不能直接支持可选参数和关键字参数。
 
-### 4.5定义：define
+### 4.5 定义：define
 
 定义的基本形式如下
 
@@ -2341,13 +2341,13 @@ case-lambda 函数不能直接支持可选参数和关键字参数。
 
 例如：
 
-```
+```lisp
 (define salutation (list-ref '("Hi" "Hello") (random 2)))
 > salutation
 "Hi"
 ```
 
-#### 4.5.1函数简写
+#### 4.5.1 函数简写
 
 define 形式通常支持函数定义的简写：
 
@@ -2363,7 +2363,7 @@ define 形式通常支持函数定义的简写：
 
 例如：
 
-```
+```lisp
 (define (greet name)
     (string-append salutation ", " name))
 
@@ -2387,7 +2387,7 @@ define 形式通常支持函数定义的简写：
 
 例如：
 
-```
+```lisp
 (define (avg . l)
     (/ (apply + l) (length l)))
 
@@ -2395,11 +2395,11 @@ define 形式通常支持函数定义的简写：
 2
 ```
 
-#### 4.5.2柯里化函数简写
+#### 4.5.2 柯里化函数简写
 
 考虑下面的 make-add-suffix 函数，它接受一个字符串并返回另一个接受字符串的函数：
 
-```
+```lisp
 (define make-add-suffix
     (lambda (s2)
         (lambda (s) (string-append s s2))))
@@ -2407,7 +2407,7 @@ define 形式通常支持函数定义的简写：
 
 尽管不是很普遍，make-add-suffix 的结果可以直接被调用，就像这样：
 
-```
+```lisp
 > ((make-add-suffix "!") "Hello")
 "Hello!"
 ```
@@ -2416,14 +2416,14 @@ define 形式通常支持函数定义的简写：
 
 使用 define 函数简写，make-add-suffix 可以被等价写成：
 
-```
+```lisp
 (define (make-add-suffix s2)
     (lambda (s) (string-append s s2)))
 ```
 
 函数简写反映了 (make-add-suffix "!") 函数调用的形态。define 形式还支持定义嵌套函数调用的柯里化函数的简写：
 
-```
+```lisp
 (define ((make-add-suffix s2) s)
     (string-append s s2))
 
@@ -2453,11 +2453,11 @@ define 函数简写的完整语法如下：
 
 这个简写的扩展对于每个 *head* 定义都有一层 lambda 嵌套（从最里层 lambda 到最外层 lambda）。
 
-#### 4.5.3多值和 define-values （Multiple Values and define-values）
+#### 4.5.3 多值和 define-values （Multiple Values and define-values）
 
 racket 表达式通常生成单一值，但是有些表达式可以生成多个结果。比如 quotient 和 remainder 各自生成一个值，但是quotient/remainder 一次生成同样的两个值：
 
-```
+```lisp
 > (quotient 13 3)
 4
 > (remainder 13 3)
@@ -2471,7 +2471,7 @@ racket 表达式通常生成单一值，但是有些表达式可以生成多个�
 
 多返回值函数可以通过函数 values 来实现，它会接受任意数量的值，并作为结果返回它们。
 
-```
+```lisp
 > (values 1 2 3)
 1
 2
@@ -2498,7 +2498,7 @@ define-values 形式通过一个单一表达式，一次性绑定多个标识符
 
 例如：
 
-```
+```lisp
 (define-values (given surname) (split-name "Adam Smith"))
 
 > given
@@ -2509,7 +2509,7 @@ define-values 形式通过一个单一表达式，一次性绑定多个标识符
 
 define 形式（不是函数简写）等价于 define-values 形式的单值情况。
 
-#### 4.5.4内部定义（Internal Definitions）
+#### 4.5.4 内部定义（Internal Definitions）
 
 当句法形式指定了 *body*，那么对应的形式可以是定义或者是表达式。*body* 的定义就是内部定义。
 
@@ -2524,7 +2524,7 @@ define 形式（不是函数简写）等价于 define-values 形式的单值情�
 
 所以，如下显示的是一个合法的句法实例：
 
-```
+```lisp
 (lambda (f)                     ; no definitions
     (printf "running\n")
     (f 0))
@@ -2553,7 +2553,7 @@ define 形式（不是函数简写）等价于 define-values 形式的单值情�
 
 例如：
 
-```
+```lisp
 (define (weird)
     (define x x)
     x)
@@ -2565,7 +2565,7 @@ x: undefined;
 
 使用 define 的内部定义序列，可以很容易转成等价的 letrec 形式。然而，其他定义形式也可以出现在 *body* 中，包括 define-values，struct或者 define-syntax。
 
-### 4.6本地绑定
+### 4.6 本地绑定
 
 尽管内部定义可以被用作本地绑定（local binding），然而racket 还提供给程序员比绑定更多控制的三种形式：let，let*，和 letrec。
 
@@ -2581,7 +2581,7 @@ let 形式使用 let body 绑定标识符集，其中每一个都是表达式的
 
 例如：
 
-```
+```lisp
 > (let ([me "Bob"])
     me)
 "Bob"
@@ -2600,7 +2600,7 @@ eval:3:0: let: duplicate identifier
 
 事实上，对于必须引用旧值的包装器，*id* 的 *expr* 不意识到自己的绑定通常很有用。
 
-```
+```lisp
 > (let ([+ (lambda (x y)
                 (if (string? x)
                     (string-append x y)
@@ -2612,7 +2612,7 @@ eval:3:0: let: duplicate identifier
 
 有时，let 绑定需要方便的交换或重新排列：
 
-```
+```lisp
 > (let ([me "Tarzan"]
         [you "Jane"])
     (let ([me you]
@@ -2623,7 +2623,7 @@ eval:3:0: let: duplicate identifier
 
 将 let 绑定描述为“并行”并不意味着要进行并发计算。表达式是按顺序求值的，即使绑定延迟到所有表达式求值为止。
 
-#### 4.6.2顺序绑定：let*（Sequential Binding: let*）
+#### 4.6.2 顺序绑定：let**（Sequential Binding: let*）
 
 let* 的语法和 let一样：
 
@@ -2635,7 +2635,7 @@ let* 的语法和 let一样：
 
 例如：
 
-```
+```lisp
 > (let* ([x (list "Burroughs")]
          [y (cons "Rice" x)]
          [z (cons "Edgar" y)])
@@ -2650,7 +2650,7 @@ let* 的语法和 let一样：
 
 换句话说，let* 形式等价于嵌套的 let 形式，每一个都是单值绑定：
 
-```
+```lisp
 > (let ([name (list "Burroughs")])
     (let ([name (cons "Rice" name)])
         (let ([name (cons "Edgar" name)])
@@ -2670,7 +2670,7 @@ let 使绑定只能在 body 中使用，let* 使绑定可以在其后绑定的�
 
 letrec形式的表达式通常是递归和相互递归函数的lambda形式：
 
-```
+```lisp
 > (letrec ([swing
             (lambda (t)
                 (if (eq? (car t) 'tarzan)
@@ -2708,14 +2708,14 @@ directory-list: could not open directory
 
 其实 letrec 形式的 expr 通常是 lambda 表达式，他们可以是任何表达式。这些表达式按顺序执行，虽然他们的值被获得，并立即关联到对应的 id。在内部定义中，当一个 id 在其值未生成时就被引用，就会抛出一个错误。
 
-```
+```lisp
 > (letrec ([quicksand quicksand])
     quicksand)
 quicksand: undefined;
  cannot use before initialization
 ```
 
-#### 4.6.4let命名（Named let）
+#### 4.6.4 let 命名（Named let）
 
 let 命名是迭代和递归的。它使用的同本地绑定一样的语法关键字 let，但是 let 后面跟一个标识符（而不是直接的左圆括号），用来触发不同的解析。
 
@@ -2735,7 +2735,7 @@ let 命名是迭代和递归的。它使用的同本地绑定一样的语法关�
 这表示，let 命名绑定了一个只在函数体中可见的函数标识符，
 并且它通过一些初始表达式的值隐式的调用函数。
 
-```
+```lisp
 (define (duplicate pos lst)
     (let dup ([i 0]
               [lst lst])
@@ -2746,7 +2746,7 @@ let 命名是迭代和递归的。它使用的同本地绑定一样的语法关�
 '("apple" "cheese burger!" "cheese burger!" "banana")
 ```
 
-#### 4.6.5多值绑定（Multiple Values: let-values, let*-values, letrec-values）
+#### 4.6.5 多值绑定（Multiple Values: let-values, let*-values, letrec-values）
 
 同样的，define-values 用来在定义中绑定多值，let-values，let*-values 和 letrec-values 在局部绑定多个结果。
 
@@ -2769,13 +2769,13 @@ let 命名是迭代和递归的。它使用的同本地绑定一样的语法关�
 
 例如：
 
-```
+```lisp
 > (let-values ([q r (quotient/remainder 14 3)])
     (list q r))
 '(4 2)
 ```
 
-### 4.7条件句
+### 4.7 条件句
 
 大多数用于分支的函数，比如 < 和 string?，产生 #t 或 #f。然而racket 的分支形式把所有非 #f 的值作为 #t 对待。可以这样说真值表示任何非 #f 的值。
 
@@ -2783,7 +2783,7 @@ let 命名是迭代和递归的。它使用的同本地绑定一样的语法关�
 
 比如，函数 member 具有双重职责。它可以用来查找以特殊的项开始的列表的尾部，或者可以用来简单检查这个项在列表中是否被提供。
 
-```
+```lisp
 > (member "Groucho" '("harpo" "Zeppo"))
 #f
 > (member "Groucho" '("Harpo" "Groucho" "Zeppo") )
@@ -2810,7 +2810,7 @@ text-expr 总是会被执行。如果它生成一个非 #f 值，那么 then-exp
 
 if 形式必须同时拥有 then-expr 和 else-expr。后者（else-expr）不是可选的。基于 test-expr 执行（或跳过）副作用，请使用 when 或 unless，我们将在后面的序列中描述。
 
-#### 4.7.2合并测试：and 和 or
+#### 4.7.2 合并测试：and 和 or
 
 racket 的 and 和 or 是语法形式，而不是函数。和函数不同，and 和 or 形式当在前面的表达式决定了结果时，会跳过执行后面的表达式。
 
@@ -2828,7 +2828,7 @@ racket 的 and 和 or 是语法形式，而不是函数。和函数不同，and 
 
 例如：
 
-```
+```lisp
 > (define (got-milk? lst)
     (and (not (null? lst))
          (or (eq? 'milk (car lst))
@@ -2839,7 +2839,7 @@ racket 的 and 和 or 是语法形式，而不是函数。和函数不同，and 
 
 如果执行到 and 或 or 形式的最后一个表达式，这个表达式的值直接决定了 and 或 or 的值。因此，位于尾部的最后一个表达式，表明了上述的函数 got-milk? 在常数空间内运行。
 
-#### 4.7.3链式测试：cond
+#### 4.7.3 链式测试：cond
 cond 形式链起一系列测试并选择一个结果表达式。cond 的语法如下：
 
 ```
@@ -2852,7 +2852,7 @@ cond 形式链起一系列测试并选择一个结果表达式。cond 的语法�
 cond 中最后的 test-expr 可以用 else 代替。在执行的条目中，else 作为 #t 的同义词，它表示最后的子句的意思是捕获所有剩下的情况。如果没有使用 else，那么可能会没有 test-expr 生成 真值。在这种情况下，cond 表达式的结果是 #\<void\>。
 
 例如：
-```
+```lisp
 > (cond
     [(= 2 3) (error "wrong!")]
     [(= 2 2) 'ok])
@@ -2891,7 +2891,7 @@ cond-clause = [test-expr then-body ...+]
 
 例如：
 
-```
+```lisp
 > (define (after-groucho lst)
     (cond
       [(member "Groucho" lst) => cdr]
@@ -2904,11 +2904,11 @@ not there
 
 只包含 test-expr 的子句很少被使用。它捕获 test-expr 的真值结果，并把该结果作为整个 cond 表达式的结果返回。
 
-### 4.8顺序执行
+### 4.8 顺序执行
 
 racket 程序员喜欢写尽可能少副作用的代码，因为纯函数式代码更容易被测试和被组织进更大的程序。然而，和外部环境交互需要顺序执行，比如写入到显示（writing to a play）、打开图形化窗口或者操纵文件到磁盘。
 
-#### 4.8.1效果在前：begin(Effects Before: begin)
+#### 4.8.1 效果在前：begin (Effects Before: begin)
 
 begin 表达式串联一组表达式：
 
@@ -2920,7 +2920,7 @@ begin 表达式串联一组表达式：
 
 例如：
 
-```
+```lisp
 (deifne (print-triangle height)
     (if (zero? height)
         (void)
@@ -2939,7 +2939,7 @@ begin 表达式串联一组表达式：
 
 例如：
 
-```
+```lisp
 (define (print-triangle height)
     (cond
         [(positive? height)
@@ -2958,7 +2958,7 @@ begin 形式在 REPL中、在模块级和在其执行体后只有局部定义时
 
 例如：
 
-```
+```lisp
 > (let ([curly 0])
     (begin
         (define moe (+ 1 curly))
@@ -2981,7 +2981,7 @@ begin0 表达式语法和 begin 表达式语法一样：
 
 例如：
 
-```
+```lisp
 (define (log-times thunk)
     (printf "Start: ~s\n" (current-inexact-milliseconds))
     (begin0
@@ -3015,7 +3015,7 @@ unless 形式类似：
 
 例如：
 
-```
+```lisp
 (define (enumerate lst)
   (if (null? (cdr lst))
       (printf "~a.\n" (car lst))
@@ -3053,7 +3053,7 @@ set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)
 
 例如：
 
-```
+```lisp
 (define greeted null)
 
 (define (greet name)
@@ -3092,9 +3092,9 @@ set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)
 
 - 与其他现代语言一样，分配共享标识符不能代替将参数传递给过程或获取过程结果。
 
-**非常糟糕的**例子：
+**非常糟糕的** 例子：
 
-```
+```lisp
 (define name "unknown")
 (define result "unknown")
 (define (greet)
@@ -3122,7 +3122,7 @@ set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)
 
 坏的例子：
 
-```
+```lisp
 > (let ([tree 0])
     (set! tree (list tree 1 tree))
     (set! tree (list tree 2 tree))
@@ -3133,7 +3133,7 @@ set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)
 
 好的例子：
 
-```
+```lisp
 > (let* ([tree 0]
          [tree (list tree 1 tree)]
          [tree (list tree 2 tree)]
@@ -3146,7 +3146,7 @@ set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)
 
 有点糟糕的例子：
 
-```
+```lisp
 (define (sum lst)
     (let ([s 0])
         (for-each (lambda (i) (set! s (+ i s)))
@@ -3158,7 +3158,7 @@ set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)
 
 好一点的例子：
 
-```
+```lisp
 (define (sum lst)
     (let loop ([lst lst] [s 0])
         (if (null? lst)
@@ -3171,7 +3171,7 @@ set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)
 
 好的例子（一般方法）：
 
-```
+```lisp
 (define (sum list)
     (for/fold ([s 0])
               ([i (in-list lst)])
@@ -3185,7 +3185,7 @@ set! 表达式执行 expr 并且改变 id (id 必须在封闭环境中绑定过)
 
 合适的例子：
 
-```
+```lisp
 (define next-number!
     (let ([n 0])
         (lambda ()
@@ -3216,7 +3216,7 @@ set!-values 形式一次性赋值多个变量（通过一个产生适当数量�
 
 例子：
 
-```
+```lisp
 (define game
     (let ([w 0]
           [l 0])
@@ -3240,7 +3240,7 @@ set!-values 形式一次性赋值多个变量（通过一个产生适当数量�
 2
 ```
 
-### 4.10引用：quote 和 '
+### 4.10 引用：quote 和 '
 
 quote 形式产生一个常量：
 
@@ -3254,7 +3254,7 @@ datum 可以是 符号、布尔值、数字、字符/字节串、字符、关键
 
 例子：
 
-```
+```lisp
 > (quote apple)
 'apple
 > (quote #t)
@@ -3277,13 +3277,13 @@ quote 形式很少用于本身就是布尔值、数字或字符串的数据，�
 
 表达式
 
-```
+```lisp
 'datum
 ```
 
 是下列形式的缩写
 
-```
+```lisp
 (quote dautm)
 ```
 
@@ -3291,7 +3291,7 @@ quote 形式很少用于本身就是布尔值、数字或字符串的数据，�
 
 例子：
 
-```
+```lisp
 > 'apple
 'apple
 > '"hello"
@@ -3306,7 +3306,7 @@ quote 形式很少用于本身就是布尔值、数字或字符串的数据，�
 
 quasiquote 形式和 quote 类似：
 
-```
+```lisp
 (quasiquote datum)
 ```
 
@@ -3323,7 +3323,7 @@ quasiquote 形式和 quote 类似：
 
 例子：
 
-```
+```lisp
 > (define (deep n)
     (cond
         [(zero? n) 0]
@@ -3337,7 +3337,7 @@ quasiquote 形式和 quote 类似：
 
 例子：
 
-```
+```lisp
 > (define (build-exp n)
     (add-lets n (make-sum n)))
 > (define (add-lets n body)
@@ -3362,7 +3362,7 @@ unquote-splicing 形式和 unquote 类似，但是它的 expr
 必须生成列表，并且 unquote-splicing 形式必须出现在产生在列表或数组的上下文中。顾名思义，结果列表被拼接进这个上下文中。
 
 例子：
-```
+```lisp
 > (quasiquote (1 2 (unquote-splicing (list (+ 1 2) (- 5 1))) 5))
 '(1 2 3 4 5)
 ```
@@ -3372,7 +3372,7 @@ unquote-splicing 形式和 unquote 类似，但是它的 expr
 
 例子：
 
-```
+```lisp
 > (define (build-exp n)
     (add-lets
      n
@@ -3398,7 +3398,7 @@ unquote-splicing 形式和 unquote 类似，但是它的 expr
 
 例子：
 
-```
+```lisp
 > (quasiquote (1 2 (quasiquote (unquote (+ 1 2)))))
 '(1 2 (quasiquote (unquote (+ 1 2))))
 > (quasiquote (1 2 (quasiquote (unquote (unquote (+ 1 2))))))
@@ -3411,7 +3411,7 @@ unquote-splicing 形式和 unquote 类似，但是它的 expr
 
 例子
 
-```
+```lisp
 > `(1 2 `(,(+ 1 2) ,,(- 5 1)))
 '(1 2 `(,(+ 1 2) ,4))
 ```
@@ -3420,7 +3420,7 @@ unquote-splicing 的简写是 ,@
 
 例子
 
-```
+```lisp
 > `(1 2 ,@(list (+ 1 2) (- 5 1)))
 '(1 2 3 4)
 ```
@@ -3441,7 +3441,7 @@ case 形式分发到一个子句（通过匹配表达式的结果和值）：
 
 例子：
 
-```
+```lisp
 > (let ([v (radom 6)])
     (printf "~a\n" v)
     (case v
@@ -3457,7 +3457,7 @@ case 形式的最后一个子句可以是 else （和 cond 一样）：
 
 例子：
 
-```
+```lisp
 > (case (random 6)
     [(0) 'zero]
     [(1) 'one]
@@ -3467,7 +3467,7 @@ case 形式的最后一个子句可以是 else （和 cond 一样）：
 
 对于更一般的模式匹配(但是没有调度时间保证)，使用match。这会在模式匹配中进行介绍。
 
-### 4.13动态绑定：parameterize
+### 4.13 动态绑定：parameterize
 
 parameterize 形式在表达式体的计算期间，将一个新值和一个参数绑定。
 
@@ -3478,7 +3478,7 @@ parameterize 形式在表达式体的计算期间，将一个新值和一个参�
 
 比如，参数 error-print-width 控制一个值的多少字符被打印在错误信息中：
 
-```
+```lisp
 > (parameterize ([error-print-width 5])
     (car (expt 10 1024)))
 car: contract violation
@@ -3493,7 +3493,7 @@ car: contract violation
 
 更一般的讲，参数实现了一种动态绑定。函数 make-parameter 接受任何值并返回一个新的初始值为该值的变量。将参数作为函数使用并返回当前值：
 
-```
+```lisp
 > (define location (make-parameter "here"))
 > (location)
 "here"
@@ -3501,7 +3501,7 @@ car: contract violation
 
 在 parameterize 形式中，每个 parameter-expr 必须生成一个参数。在 body 执行期间，每个明确的参数的结果给定为对应的 value-expr。当执行代码离开 parameterize 形式时（不管是正常退出，异常退出，还是其他推出）,这个参数会还原到它之前的值。
 
-```
+```lisp
 > (parameterize ([location "there"])
     (location))
 "there"
@@ -3524,7 +3524,7 @@ car: contract violation
 
 parameterize 形式不像 let 绑定一样，上面的每次 location 的使用都会直接引用原定义。在parameterize 表达式执行体被执行期间，parameterize 形式会修改参数的值，甚至即便是在 parameterize 执行体外部定义的参数也是一样。
 
-```
+```lisp
 > (define (would-you-could-you?)
     (and (not (equal? (location) "here"))
          (not (equal? (location) "there"))))
@@ -3537,7 +3537,7 @@ parameterize 形式不像 let 绑定一样，上面的每次 location 的使用�
 
 如果一个在生成值之前还未执行的 parameterize 执行体内部对一个变量进行使用，那么这次使用将不会看到 parameterize 形式对这个变量的修改：
 
-```
+```lisp
 > (let ([get (parameterize ([location "with a fox"])
                 (lambda () (location)))])
     (get))
@@ -3546,7 +3546,7 @@ parameterize 形式不像 let 绑定一样，上面的每次 location 的使用�
 
 通过把参数作为函数调用并获取值，当前变量的绑定可以被命令式的修改。如果一个 parameterize 已经修改了参数的值，那么直接应用参数仅影响与当前 parameterize 关联的值。
 
-```
+```lisp
 > (define (try-again! where)
     (location where))
 > (location)
@@ -3564,7 +3564,7 @@ parameterize 的使用更适用于命令式的修改参数值，出于同样的�
 
 可以看出，变量 和 set! 可以解决很多与参数相同的问题。比如, lokation 可以被定义为一个字符串，set! 可以用来修改它的值：
 
-```
+```lisp
 > (define lokation "here")
 > (define (would-ya-could-ya?)
     (and (not (equal? lokation "here"))
@@ -3580,7 +3580,7 @@ parameterize 的使用更适用于命令式的修改参数值，出于同样的�
 - 参数可以与尾递归漂亮的工作。parameterize 形式的最后一个执行体相对于 parameterize 形式处于尾部位置。
 - 参数对多线程工作的好。parameterize 形式只在当前线程的执行中修改参数的值，这样避免了和其他线程的竞争。
 
-## 5 程序员定义的数据类型（Programmer-Defined Datatypes）
+## 5 程序员自定义的数据类型（Programmer-Defined Datatypes）
 
 新数据类型通常用 struct 形式创建，这便是这节的主题。基于类型的对象系统（参考 Classes and Objects）提供了创建新数据类型的代替方案，但是即便是类型和对象也遵循数据结构的规则。
 
